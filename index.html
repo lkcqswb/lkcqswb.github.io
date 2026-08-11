@@ -3,237 +3,210 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Kaicheng Luo — Sound from Vision</title>
-<meta name="description" content="Kaicheng Luo — M.S. student, School of Data Science, Fudan University. Video-to-audio generation, spatial audio, and reasoning in audio foundation models. ICLR / ICML / NeurIPS." />
+<title>Kaicheng Luo</title>
+<meta name="description" content="Kaicheng Luo — M.S. student, School of Data Science, Fudan University. Video-to-audio generation, spatial audio, and reasoning in audio foundation models." />
 <meta name="author" content="Kaicheng Luo" />
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Kaicheng Luo — Sound from Vision" />
-<meta property="og:description" content="Mathematics at Zhejiang University, data science at Fudan. I build models that watch a scene and generate what it should sound like." />
+<meta property="og:title" content="Kaicheng Luo" />
+<meta property="og:description" content="Mathematics at Zhejiang University, data science at Fudan. I work on models that watch a scene and generate what it should sound like." />
 <meta property="og:url" content="https://lkcqswb.github.io/" />
-<meta name="twitter:card" content="summary_large_image" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2308070d'/><g fill='%23e879f9'><rect x='14' y='42' width='7' height='16' rx='3'/><rect x='28' y='30' width='7' height='40' rx='3'/><rect x='42' y='16' width='7' height='68' rx='3'/><rect x='56' y='34' width='7' height='32' rx='3'/><rect x='70' y='24' width='7' height='52' rx='3'/></g></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2314121c'/><g fill='%238b5cf6'><rect x='14' y='42' width='7' height='16' rx='3'/><rect x='28' y='30' width='7' height='40' rx='3'/><rect x='42' y='16' width='7' height='68' rx='3'/><rect x='56' y='34' width='7' height='32' rx='3'/><rect x='70' y='24' width='7' height='52' rx='3'/></g></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110..125,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
-    /* one chromatic event (the bloom + signal); everything else is bone on void */
-    --void:#08070d;
-    --panel:rgba(17,14,26,.44);
-    --bone:#EDE9F5;
-    --dim:#8B8399;
-    --dimmer:#5F5872;
-    --wire:rgba(198,178,240,.13);
-    --wire-lit:rgba(214,196,255,.28);
-    --signal:#E879F9;
-    --now:#5EEAD4;
+    /* cool paper, not cream — the ink keeps a violet undertone all the way down */
+    --paper:#F4F3F7;
+    --paper-lit:#FBFAFD;
+    --ink:#14121C;
+    --ink-2:#3B3646;
+    --dim:#6E6880;
+    --dimmer:#918BA1;
+    --wire:rgba(20,18,28,.11);
+    --wire-lit:rgba(109,40,217,.34);
+    --signal:#6D28D9;
+    --now:#0F766E;
 
     --display:'Archivo','Helvetica Neue',Arial,sans-serif;
     --body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
     --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
 
-    --shell:min(1160px,100% - 2.5rem);
+    --shell:min(1080px,100% - 2.5rem);
     --gutter:76px;
   }
   *,*::before,*::after{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
   body{
-    margin:0;background:var(--void);color:var(--bone);
-    font-family:var(--body);font-size:16px;line-height:1.6;
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--body);font-size:16.5px;line-height:1.65;
     -webkit-font-smoothing:antialiased;overflow-x:hidden;
   }
   a{color:inherit}
-  ::selection{background:rgba(232,121,249,.28)}
+  ::selection{background:rgba(109,40,217,.16)}
   :focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:2px}
 
-  .lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+  .lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
 
-  /* ---------- background ---------- */
-  /* the bloom is the hero's event; below the fold it recedes to atmosphere */
+  /* ---------- ground ---------- */
   #fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;will-change:opacity}
-  .veil,.vignette,.grain{position:fixed;inset:0;z-index:1;pointer-events:none}
-  .veil{background:
-      radial-gradient(120% 80% at 78% 8%, rgba(232,121,249,.15), transparent 55%),
-      radial-gradient(100% 70% at 8% 22%, rgba(124,58,237,.16), transparent 60%);}
-  .vignette{z-index:2;background:radial-gradient(130% 100% at 50% 40%, transparent 44%, rgba(3,2,8,.76) 100%)}
-  .grain{z-index:2;inset:-50%;opacity:.045;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-    animation:grain 7s steps(6) infinite}
-  @keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}
-    60%{transform:translate(-2%,-2%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+  .wash,.grain{position:fixed;inset:0;z-index:1;pointer-events:none}
+  .wash{background:radial-gradient(120% 90% at 50% 55%, transparent 40%, var(--paper) 88%)}
+  .grain{inset:-50%;opacity:.5;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E")}
 
   .page{position:relative;z-index:3}
   .shell{width:var(--shell);margin-inline:auto}
 
   /* ---------- top bar ---------- */
   .bar{position:fixed;top:0;left:0;right:0;z-index:20;border-bottom:1px solid transparent;
-    background:transparent;transition:background .4s,border-color .4s,backdrop-filter .4s}
-  .bar.stuck{background:rgba(8,7,13,.72);border-bottom-color:var(--wire);
-    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-  .bar-in{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:60px}
-  .mark{display:inline-flex;align-items:center;gap:.6rem;text-decoration:none}
-  .mark .eq{display:flex;align-items:flex-end;gap:2px;height:13px}
-  .mark .eq i{width:2px;background:var(--signal);border-radius:1px;animation:eq 1.5s ease-in-out infinite}
-  .mark .eq i:nth-child(1){height:5px;animation-delay:0s}
-  .mark .eq i:nth-child(2){height:12px;animation-delay:.18s}
-  .mark .eq i:nth-child(3){height:8px;animation-delay:.36s}
-  .mark .eq i:nth-child(4){height:13px;animation-delay:.54s}
-  @keyframes eq{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
-  .mark span{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone)}
-  .links{display:flex;gap:1.6rem}
-  .links a{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+    transition:background .35s,border-color .35s,backdrop-filter .35s}
+  .bar.stuck{background:rgba(244,243,247,.82);border-bottom-color:var(--wire);
+    backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4)}
+  .bar-in{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:58px}
+  .mark{font-family:var(--mono);font-size:.72rem;letter-spacing:.19em;text-transform:uppercase;
+    color:var(--ink);text-decoration:none;white-space:nowrap}
+  .mark .abbr{display:none}
+  .links{display:flex;gap:1.5rem}
+  .links a{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
     color:var(--dim);text-decoration:none;position:relative;padding:.3rem 0;transition:color .25s}
-  .links a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;
+  .links a::after{content:"";position:absolute;left:0;right:100%;bottom:.15rem;height:1px;
     background:var(--signal);transition:right .3s cubic-bezier(.22,1,.36,1)}
-  .links a:hover{color:var(--bone)}
+  .links a:hover{color:var(--ink)}
   .links a:hover::after{right:0}
 
   /* ---------- hero ---------- */
-  .hero{min-height:100svh;display:flex;align-items:center;padding:7.5rem 0 4.5rem}
-  .kicker{display:flex;align-items:center;gap:.85rem;margin:0 0 2rem}
-  .kicker .bead{width:6px;height:6px;border-radius:50%;background:var(--now);box-shadow:0 0 12px var(--now);flex:none}
+  .hero{min-height:100svh;display:flex;align-items:center;padding:7rem 0 4.5rem}
+  .kicker{display:flex;align-items:center;gap:.8rem;margin:0 0 1.7rem}
+  .kicker .bead{width:6px;height:6px;border-radius:50%;background:var(--now);flex:none;
+    box-shadow:0 0 0 3px rgba(15,118,110,.14)}
   .name{
-    font-family:var(--display);font-weight:700;font-stretch:122%;
-    font-size:clamp(3.4rem,11.5vw,8.2rem);line-height:.86;letter-spacing:-.035em;
-    margin:0;color:var(--bone);text-transform:uppercase;
+    font-family:var(--display);font-weight:700;font-stretch:108%;
+    font-size:clamp(3rem,9vw,6.4rem);line-height:.95;letter-spacing:-.045em;
+    margin:0;color:var(--ink);
   }
-  .name .b{display:block;overflow:hidden}
-  .name .b > i{display:block;font-style:normal;transform:translateY(105%);animation:rise .95s cubic-bezier(.16,1,.3,1) forwards}
-  .name .b:nth-child(2) > i{animation-delay:.09s}
+  .name .b{display:block;overflow:hidden;padding-bottom:.04em}
+  .name .b > i{display:block;font-style:normal;transform:translateY(105%);
+    animation:rise 1s cubic-bezier(.16,1,.3,1) forwards}
+  .name .b:nth-child(2) > i{animation-delay:.08s}
   @keyframes rise{to{transform:none}}
-  .thesis{
-    margin:2.1rem 0 0;max-width:44ch;font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.55;color:#CFC7DE;
-  }
-  .thesis em{font-style:normal;color:var(--bone);box-shadow:inset 0 -.42em 0 rgba(232,121,249,.2)}
 
-  /* education rail — a real two-node track, not bullets */
-  .rail{margin-top:3rem;max-width:640px}
-  .rail-line{display:flex;align-items:center;gap:0}
-  .rail-line .node{width:9px;height:9px;border-radius:50%;background:var(--dimmer);flex:none;position:relative}
-  .rail-line .node.live{background:var(--now);box-shadow:0 0 0 4px rgba(94,234,212,.13),0 0 14px var(--now)}
+  .bio{margin:1.9rem 0 0;max-width:50ch;font-size:1.12rem;line-height:1.62;color:var(--ink-2)}
+  .bio em{font-style:normal;color:var(--ink);
+    box-shadow:inset 0 -.38em 0 rgba(109,40,217,.13)}
+
+  /* education as a track — the one structural device, and it encodes a real transition */
+  .rail{margin-top:2.8rem;max-width:600px}
+  .rail-line{display:flex;align-items:center}
+  .rail-line .node{width:8px;height:8px;border-radius:50%;background:var(--dimmer);flex:none}
+  .rail-line .node.live{background:var(--now);box-shadow:0 0 0 4px rgba(15,118,110,.13)}
   .rail-line .seg{height:1px;flex:1;background:linear-gradient(90deg,var(--dimmer),var(--now))}
-  .rail-meta{display:flex;justify-content:space-between;gap:1.2rem;margin-top:.85rem}
-  .rail-meta div{display:flex;flex-direction:column;gap:.2rem}
+  .rail-meta{display:flex;justify-content:space-between;gap:1.2rem;margin-top:.8rem}
+  .rail-meta div{display:flex;flex-direction:column;gap:.15rem}
   .rail-meta .to{text-align:right}
-  .rail-meta .school{font-size:.92rem;color:var(--bone);font-weight:500}
-  .rail-meta .deg{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .rail-meta .school{font-size:.95rem;color:var(--ink);font-weight:500}
+  .rail-meta .deg{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
 
-  .acts{margin-top:3rem;display:flex;flex-wrap:wrap;gap:.6rem}
-  .act{display:inline-flex;align-items:center;gap:.6rem;text-decoration:none;font-family:var(--mono);
-    font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;padding:.8rem 1.25rem;
-    border:1px solid var(--wire);color:var(--bone);background:rgba(14,12,22,.5);
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-    transition:border-color .25s,background .25s,transform .25s}
-  .act:hover{border-color:var(--wire-lit);background:rgba(232,121,249,.1);transform:translateY(-1px)}
-  .act.lead{background:var(--signal);color:#12000f;border-color:var(--signal);font-weight:500}
-  .act.lead:hover{background:#f0a5ff;transform:translateY(-1px)}
+  .quick{margin-top:2.6rem;display:flex;flex-wrap:wrap;gap:.4rem 1.6rem}
+  .quick a{font-size:.95rem;color:var(--ink-2);text-decoration:none;
+    border-bottom:1px solid var(--wire);padding-bottom:2px;transition:color .2s,border-color .2s}
+  .quick a:hover{color:var(--signal);border-bottom-color:var(--wire-lit)}
+  .quick a .ar{color:var(--dimmer);font-size:.8em}
 
-  /* ---------- section frames ---------- */
-  .band{padding:7rem 0}
-  .band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:.4rem 1.2rem;margin-bottom:3.4rem;
-    padding-bottom:1.1rem;border-bottom:1px solid var(--wire)}
-  .band-head h2{margin:0;font-family:var(--display);font-weight:700;font-stretch:118%;
-    text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(1.4rem,3.4vw,2.1rem);line-height:1}
+  /* ---------- sections ---------- */
+  .band{padding:6rem 0}
+  .band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:.4rem 1.2rem;margin-bottom:2.6rem;
+    padding-bottom:1rem;border-bottom:1px solid var(--wire)}
+  .band-head h2{margin:0;font-family:var(--display);font-weight:600;font-stretch:106%;
+    letter-spacing:-.025em;font-size:clamp(1.3rem,2.8vw,1.7rem);line-height:1;color:var(--ink)}
   .band-head .count{margin-left:auto;flex:none}
-  #interests .band-head,#contact .band-head{margin-bottom:1.6rem}
 
-  /* ---------- papers: channel strips on a year rail ---------- */
-  .tape{position:relative}
+  /* ---------- papers ---------- */
   .year{display:grid;grid-template-columns:var(--gutter) 1fr;align-items:start}
-  .year-tag{position:sticky;top:84px;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
-    color:var(--dim);padding-top:1.5rem}
-  .year-tracks{border-left:1px solid var(--wire);padding-left:0}
-  .strip{
-    display:block;text-decoration:none;position:relative;
-    padding:1.7rem 1.6rem 1.7rem 1.9rem;border-bottom:1px solid var(--wire);
-    transition:background .3s;
-  }
-  .strip::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;
-    background:var(--signal);transform:scaleY(0);transform-origin:top;
-    transition:transform .4s cubic-bezier(.22,1,.36,1)}
-  .strip:hover{background:rgba(232,121,249,.045)}
+  .year-tag{position:sticky;top:80px;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;
+    color:var(--dim);padding-top:1.6rem}
+  .year-tracks{border-left:1px solid var(--wire)}
+  .strip{display:block;text-decoration:none;position:relative;
+    padding:1.6rem 1.4rem 1.7rem 1.8rem;border-bottom:1px solid var(--wire);transition:background .3s}
+  .strip::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;background:var(--signal);
+    transform:scaleY(0);transform-origin:top;transition:transform .45s cubic-bezier(.22,1,.36,1)}
+  .strip:hover{background:var(--paper-lit)}
   .strip:hover::before,.strip:focus-visible::before{transform:scaleY(1)}
-  .strip-top{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem 1rem;margin-bottom:.9rem}
-  .wave{width:104px;height:26px;flex:none;opacity:.55;transition:opacity .3s}
+  .strip-top{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem 1rem;margin-bottom:.75rem}
+  .wave{width:100px;height:24px;flex:none;opacity:.6;transition:opacity .3s}
   .strip:hover .wave{opacity:1}
-  .venue{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
-  .venue b{color:var(--bone);font-weight:500}
-  .repo{margin-left:auto;font-family:var(--mono);font-size:.66rem;color:var(--dimmer);letter-spacing:.06em;white-space:nowrap}
-  .strip h3{margin:0 0 .5rem;font-family:var(--display);font-weight:700;font-stretch:112%;
-    font-size:clamp(1.25rem,2.6vw,1.65rem);letter-spacing:-.018em;line-height:1.1;color:var(--bone)}
-  .sub{margin:0 0 1rem;font-size:1rem;color:#B9B1C9;line-height:1.5;max-width:62ch}
-  .byline{margin:0;font-size:.85rem;color:var(--dimmer);line-height:1.6;max-width:70ch}
-  .byline .me{color:var(--bone);font-weight:500}
-  .strip-links{margin-top:1.1rem;display:flex;gap:1.3rem;font-family:var(--mono);font-size:.66rem;
-    letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .venue{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .venue b{color:var(--ink);font-weight:500}
+  .repo{margin-left:auto;font-family:var(--mono);font-size:.66rem;color:var(--dim);white-space:nowrap}
+  .strip h3{margin:0 0 .35rem;font-family:var(--display);font-weight:600;font-stretch:104%;
+    font-size:clamp(1.2rem,2.4vw,1.5rem);letter-spacing:-.022em;line-height:1.15;color:var(--ink)}
+  .sub{margin:0 0 .9rem;font-size:1.02rem;color:var(--ink-2);line-height:1.5;max-width:60ch}
+  .byline{margin:0;font-size:.87rem;color:var(--dim);line-height:1.6;max-width:70ch}
+  .byline .me{color:var(--ink);font-weight:500}
+  .strip-links{margin-top:1rem;display:flex;gap:1.2rem;font-family:var(--mono);font-size:.66rem;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--dimmer)}
   .strip-links span{transition:color .25s}
   .strip-links span:hover,.strip:hover .strip-links .primary{color:var(--signal)}
 
-  /* ---------- interests: hairline list, no boxes ---------- */
-  .areas{display:grid;gap:0;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-  .area{padding:1.8rem 1.6rem 1.8rem 0;border-top:1px solid var(--wire)}
-  .area h3{margin:0 0 .6rem;font-size:1rem;font-weight:500;color:var(--bone);letter-spacing:-.005em}
-  .area p{margin:0;font-size:.93rem;color:var(--dim);line-height:1.6;max-width:34ch}
+  /* ---------- interests ---------- */
+  .areas{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .area{padding:1.6rem 1.6rem 1.6rem 0;border-top:1px solid var(--wire)}
+  .area h3{margin:0 0 .5rem;font-size:1rem;font-weight:500;color:var(--ink)}
+  .area p{margin:0;font-size:.94rem;color:var(--dim);line-height:1.6;max-width:34ch}
 
-  /* ---------- contact: hairline rows ---------- */
+  /* ---------- contact ---------- */
   .rows{border-top:1px solid var(--wire)}
-  .row{display:flex;align-items:center;gap:1.2rem;padding:1.35rem .2rem;border-bottom:1px solid var(--wire);
+  .row{display:flex;align-items:center;gap:1.2rem;padding:1.25rem .2rem;border-bottom:1px solid var(--wire);
     text-decoration:none;transition:padding-left .3s,background .3s}
-  .row:hover{padding-left:1rem;background:rgba(232,121,249,.045)}
-  .row .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
-    color:var(--dim);width:110px;flex:none}
-  .row .v{font-size:1.02rem;color:var(--bone);word-break:break-word}
+  .row:hover{padding-left:.9rem;background:var(--paper-lit)}
+  .row .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);width:106px;flex:none}
+  .row .v{font-size:1rem;color:var(--ink);word-break:break-word}
   .row .go{margin-left:auto;color:var(--dimmer);transition:color .25s,transform .3s;flex:none}
   .row:hover .go{color:var(--signal);transform:translateX(4px)}
 
   .foot{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
-    padding:2.5rem 0 3rem;border-top:1px solid var(--wire)}
+    padding:2.2rem 0 3rem;border-top:1px solid var(--wire)}
 
-  /* ---------- reveal ---------- */
-  .rise{opacity:0;transform:translateY(20px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1)}
+  .rise{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
   .rise.in{opacity:1;transform:none}
 
   @media (max-width:760px){
     :root{--gutter:52px}
-    .band{padding:4.5rem 0}
+    .band{padding:4.2rem 0}
     .rail-meta{flex-direction:column;gap:1rem}
     .rail-meta .to{text-align:left}
-    .year-tag{position:static;padding-top:0;margin-bottom:.6rem}
     .year{grid-template-columns:1fr}
-    .year-tracks{border-left:none;padding-left:0}
-    .strip{padding:1.5rem 0}
+    .year-tag{position:static;padding-top:0;margin-bottom:.5rem}
+    .year-tracks{border-left:none}
+    .strip{padding:1.4rem 0}
     .strip::before{left:-10px}
-    .row .k{width:88px}
-    .area{padding-right:0}
     .repo{margin-left:0;order:3;flex-basis:100%}
-    .links{gap:1.1rem}
+    .row .k{width:86px}
+    .area{padding-right:0}
+    .links{gap:1.05rem}
   }
   @media (max-width:620px){
-    .mark span{display:none}       /* the meter alone carries the mark once space is tight */
-    /* KAICHENG has to fit the measure — narrow the width axis before shrinking the size */
-    .name{font-size:13.2vw;font-stretch:112%}
+    .mark .full{display:none}
+    .mark .abbr{display:inline}
+    .name{font-size:14vw;font-stretch:100%}
   }
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
     .rise{opacity:1;transform:none;transition:none}
-    .grain,.mark .eq i{animation:none}
     .name .b > i{transform:none;animation:none}
   }
 </style>
 </head>
 <body>
 <canvas id="fx" aria-hidden="true"></canvas>
-<div class="veil" aria-hidden="true"></div>
+<div class="wash" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
-<div class="vignette" aria-hidden="true"></div>
 
 <div class="page">
   <div class="bar" id="bar">
     <div class="shell bar-in">
-      <a class="mark" href="#top" aria-label="Kaicheng Luo, home">
-        <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-        <span>Kaicheng Luo</span>
-      </a>
+      <a class="mark" href="#top"><span class="full">Kaicheng Luo</span><span class="abbr">KL</span></a>
       <nav class="links">
         <a href="#papers">Papers</a>
         <a href="#interests">Interests</a>
@@ -246,12 +219,14 @@
     <section class="hero">
       <div class="shell">
         <p class="kicker"><span class="bead" aria-hidden="true"></span>
-          <span class="lbl">M.S. student · School of Data Science · Fudan University</span></p>
+          <span class="lbl">School of Data Science · Fudan University</span></p>
 
         <h1 class="name"><span class="b"><i>Kaicheng</i></span><span class="b"><i>Luo</i></span></h1>
 
-        <p class="thesis">I build models that watch a scene and generate <em>what it should sound
-          like</em> — the right event, on the right frame, in the right place.</p>
+        <p class="bio">I work on video-to-audio generation — models that watch a scene and produce
+          <em>what it should sound like</em>: the right event, on the right frame, in the right place.
+          Lately that means reasoning about a scene before synthesising it, and getting sound into
+          space rather than just into time.</p>
 
         <div class="rail">
           <div class="rail-line" aria-hidden="true">
@@ -269,11 +244,11 @@
           </div>
         </div>
 
-        <div class="acts">
-          <a class="act lead" href="#papers">Four papers ↓</a>
-          <a class="act" href="https://openreview.net/profile?id=~Kaicheng_Luo1" target="_blank" rel="noopener">OpenReview</a>
-          <a class="act" href="https://github.com/lkcqswb" target="_blank" rel="noopener">GitHub</a>
-        </div>
+        <p class="quick">
+          <a href="https://openreview.net/profile?id=~Kaicheng_Luo1" target="_blank" rel="noopener">OpenReview <span class="ar">↗</span></a>
+          <a href="https://github.com/lkcqswb" target="_blank" rel="noopener">GitHub <span class="ar">↗</span></a>
+          <a href="mailto:kaichengluo114@gmail.com">Email <span class="ar">↗</span></a>
+        </p>
       </div>
     </section>
 
@@ -282,75 +257,73 @@
       <div class="shell">
         <div class="band-head rise">
           <h2>Papers</h2>
-          <span class="lbl count">Four · 2025–2026</span>
+          <span class="lbl count">2025–2026</span>
         </div>
 
-        <div class="tape">
-          <div class="year">
-            <div class="year-tag">2026</div>
-            <div class="year-tracks">
-              <a class="strip rise" href="https://openreview.net/forum?id=cIfDKEbAky" target="_blank" rel="noopener">
-                <div class="strip-top">
-                  <canvas class="wave" data-seed="PrismAudio" width="208" height="52" aria-hidden="true"></canvas>
-                  <span class="venue"><b>ICLR 2026</b> · Poster</span>
-                </div>
-                <h3>PrismAudio</h3>
-                <p class="sub">Decomposed chain-of-thought and multi-dimensional rewards for video-to-audio generation.</p>
-                <p class="byline">Huadai Liu, <span class="me">Kaicheng Luo</span>, Wen Wang, Qian Chen,
-                  Peiwen Sun, Rongjie Huang, Xiangang Li, Jieping Ye, Wei Xue</p>
-                <div class="strip-links"><span class="primary">OpenReview ↗</span></div>
-              </a>
+        <div class="year">
+          <div class="year-tag">2026</div>
+          <div class="year-tracks">
+            <a class="strip rise" href="https://openreview.net/forum?id=cIfDKEbAky" target="_blank" rel="noopener">
+              <div class="strip-top">
+                <canvas class="wave" data-seed="PrismAudio" width="200" height="48" aria-hidden="true"></canvas>
+                <span class="venue"><b>ICLR 2026</b> · Poster</span>
+              </div>
+              <h3>PrismAudio</h3>
+              <p class="sub">Decomposed chain-of-thought and multi-dimensional rewards for video-to-audio generation.</p>
+              <p class="byline">Huadai Liu, <span class="me">Kaicheng Luo</span>, Wen Wang, Qian Chen,
+                Peiwen Sun, Rongjie Huang, Xiangang Li, Jieping Ye, Wei Xue</p>
+              <div class="strip-links"><span class="primary">OpenReview ↗</span></div>
+            </a>
 
-              <a class="strip rise" href="https://openreview.net/forum?id=SDWG5xr20c" target="_blank" rel="noopener">
-                <div class="strip-top">
-                  <canvas class="wave" data-seed="STAR-VAE" width="208" height="52" aria-hidden="true"></canvas>
-                  <span class="venue"><b>ICML 2026</b></span>
-                </div>
-                <h3>STAR-VAE</h3>
-                <p class="sub">Structured topology-aware regularization for audio reconstruction and generation.</p>
-                <p class="byline">Huadai Liu, Wen Wang, <span class="me">Kaicheng Luo</span>, Qian Chen,
-                  Xiangang Li, Wei Xue</p>
-                <div class="strip-links"><span class="primary">OpenReview ↗</span></div>
-              </a>
-            </div>
+            <a class="strip rise" href="https://openreview.net/forum?id=SDWG5xr20c" target="_blank" rel="noopener">
+              <div class="strip-top">
+                <canvas class="wave" data-seed="STAR-VAE" width="200" height="48" aria-hidden="true"></canvas>
+                <span class="venue"><b>ICML 2026</b></span>
+              </div>
+              <h3>STAR-VAE</h3>
+              <p class="sub">Structured topology-aware regularization for audio reconstruction and generation.</p>
+              <p class="byline">Huadai Liu, Wen Wang, <span class="me">Kaicheng Luo</span>, Qian Chen,
+                Xiangang Li, Wei Xue</p>
+              <div class="strip-links"><span class="primary">OpenReview ↗</span></div>
+            </a>
           </div>
+        </div>
 
-          <div class="year">
-            <div class="year-tag">2025</div>
-            <div class="year-tracks">
-              <a class="strip rise" href="https://openreview.net/forum?id=mj8VN4MyrO" target="_blank" rel="noopener">
-                <div class="strip-top">
-                  <canvas class="wave" data-seed="ThinkSound" width="208" height="52" aria-hidden="true"></canvas>
-                  <span class="venue"><b>NeurIPS 2025</b> · Poster</span>
-                  <span class="repo">1.4k ★ QwenAudio/ThinkSound</span>
-                </div>
-                <h3>ThinkSound</h3>
-                <p class="sub">Chain-of-thought reasoning in multimodal LLMs for audio generation and editing.</p>
-                <p class="byline">Huadai Liu, <span class="me">Kaicheng Luo</span>, Jialei Wang, Wen Wang,
-                  Qian Chen, Zhou Zhao, Wei Xue</p>
-                <div class="strip-links">
-                  <span class="primary">OpenReview ↗</span>
-                  <span data-href="https://github.com/QwenAudio/ThinkSound">Code ↗</span>
-                </div>
-              </a>
+        <div class="year">
+          <div class="year-tag">2025</div>
+          <div class="year-tracks">
+            <a class="strip rise" href="https://openreview.net/forum?id=mj8VN4MyrO" target="_blank" rel="noopener">
+              <div class="strip-top">
+                <canvas class="wave" data-seed="ThinkSound" width="200" height="48" aria-hidden="true"></canvas>
+                <span class="venue"><b>NeurIPS 2025</b> · Poster</span>
+                <span class="repo">QwenAudio/ThinkSound · 1.4k ★</span>
+              </div>
+              <h3>ThinkSound</h3>
+              <p class="sub">Chain-of-thought reasoning in multimodal LLMs for audio generation and editing.</p>
+              <p class="byline">Huadai Liu, <span class="me">Kaicheng Luo</span>, Jialei Wang, Wen Wang,
+                Qian Chen, Zhou Zhao, Wei Xue</p>
+              <div class="strip-links">
+                <span class="primary">OpenReview ↗</span>
+                <span data-href="https://github.com/QwenAudio/ThinkSound">Code ↗</span>
+              </div>
+            </a>
 
-              <a class="strip rise" href="https://openreview.net/forum?id=qEVxub0h2a" target="_blank" rel="noopener">
-                <div class="strip-top">
-                  <canvas class="wave" data-seed="OmniAudio360" width="208" height="52" aria-hidden="true"></canvas>
-                  <span class="venue"><b>ICML 2025</b> · Poster</span>
-                  <span class="repo">375 ★ liuhuadai/OmniAudio</span>
-                </div>
-                <h3>OmniAudio</h3>
-                <p class="sub">Generating spatial audio from 360° video.</p>
-                <p class="byline">Huadai Liu, Tianyi Luo, <span class="me">Kaicheng Luo</span>, Qikai Jiang,
-                  Peiwen Sun, Jialei Wang, Rongjie Huang, Qian Chen, Wen Wang, Xiangtai Li,
-                  Shiliang Zhang, Zhijie Yan, Zhou Zhao, Wei Xue</p>
-                <div class="strip-links">
-                  <span class="primary">OpenReview ↗</span>
-                  <span data-href="https://github.com/liuhuadai/OmniAudio">Code ↗</span>
-                </div>
-              </a>
-            </div>
+            <a class="strip rise" href="https://openreview.net/forum?id=qEVxub0h2a" target="_blank" rel="noopener">
+              <div class="strip-top">
+                <canvas class="wave" data-seed="OmniAudio360" width="200" height="48" aria-hidden="true"></canvas>
+                <span class="venue"><b>ICML 2025</b> · Poster</span>
+                <span class="repo">liuhuadai/OmniAudio · 375 ★</span>
+              </div>
+              <h3>OmniAudio</h3>
+              <p class="sub">Generating spatial audio from 360° video.</p>
+              <p class="byline">Huadai Liu, Tianyi Luo, <span class="me">Kaicheng Luo</span>, Qikai Jiang,
+                Peiwen Sun, Jialei Wang, Rongjie Huang, Qian Chen, Wen Wang, Xiangtai Li,
+                Shiliang Zhang, Zhijie Yan, Zhou Zhao, Wei Xue</p>
+              <div class="strip-links">
+                <span class="primary">OpenReview ↗</span>
+                <span data-href="https://github.com/liuhuadai/OmniAudio">Code ↗</span>
+              </div>
+            </a>
           </div>
         </div>
       </div>
@@ -361,7 +334,7 @@
       <div class="shell">
         <div class="band-head rise">
           <h2>Interests</h2>
-          <span class="lbl count">Where I&rsquo;m headed</span>
+          <span class="lbl count">What I keep coming back to</span>
         </div>
         <div class="areas">
           <div class="area rise">
@@ -385,7 +358,7 @@
       <div class="shell">
         <div class="band-head rise">
           <h2>Contact</h2>
-          <span class="lbl count">Open to collaboration</span>
+          <span class="lbl count">Happy to talk about any of this</span>
         </div>
         <div class="rows">
           <a class="row rise" href="mailto:kaichengluo114@gmail.com">
@@ -411,26 +384,28 @@
 <script>
 (() => {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const PAPER = '#F4F3F7';
 
-  /* ================= flow-field particle bloom ================= */
+  /* ============ flow field, drawn as ink spreading through paper ============ */
   const canvas = document.getElementById('fx');
   const ctx = canvas.getContext('2d', { alpha: false });
   let W = 0, H = 0, dpr = 1, particles = [], t = 0, raf = 0;
   const bloom = { x: 0, y: 0, r: 0, wide: false };
-  const COLORS = ['#e879f9', '#a78bfa', '#5eead4', '#f0abfc'];
+  // on a light ground the strokes darken rather than glow, so these are pigments, not lights
+  const COLORS = ['#4C1D95', '#5B21B6', '#0F766E', '#86198F'];
 
   function resize() {
     dpr = Math.min(devicePixelRatio || 1, 2);
     W = innerWidth; H = innerHeight;
     canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#08070d';
+    ctx.fillStyle = PAPER;
     ctx.fillRect(0, 0, W, H);
 
     bloom.wide = W > 900;
-    bloom.x = W * (bloom.wide ? .72 : .5);
-    bloom.y = H * (bloom.wide ? .44 : .18);
-    bloom.r = Math.max(W, H) * .58;
+    bloom.x = W * (bloom.wide ? .74 : .5);
+    bloom.y = H * (bloom.wide ? .46 : .14);
+    bloom.r = Math.max(W, H) * .48;
     seed();
   }
 
@@ -440,31 +415,35 @@
     const d = Math.hypot(x - bloom.x, y - bloom.y) / bloom.r;
     let m = Math.max(0, 1 - d * d);
     if (bloom.wide) {
-      const edge = W * .52;
-      if (x < edge) m *= Math.max(.06, (x / edge) ** 2.2);
+      const edge = W * .54;
+      if (x < edge) m *= Math.max(.04, (x / edge) ** 2.4);
     } else {
-      m *= .45; // narrow screens: the bloom sits behind the type, so keep it quieter
+      m *= .22; // narrow screens the ink runs straight through the text, so keep it faint
     }
     return m;
   }
 
+  const TAIL = 34;   // points kept per particle — the ribbon length
+
   function seed() {
-    const density = Math.round((W * H) / 3200);
-    const count = Math.max(140, Math.min(reduced ? 200 : 620, density));
+    const density = Math.round((W * H) / 4200);
+    const count = Math.max(90, Math.min(reduced ? 130 : 430, density));
     particles = Array.from({ length: count }, spawn);
   }
 
-  function spawn() {
+  function spawn(p) {
     const clustered = Math.random() < .82;
-    return {
-      x: clustered ? bloom.x + gauss() * bloom.r * .62 : Math.random() * W,
-      y: clustered ? bloom.y + gauss() * bloom.r * .5 : Math.random() * H,
-      life: Math.random() * 260 + 90,
-      age: 0,
-      w: Math.random() * 1.5 + .35,
-      spd: Math.random() * 1.1 + .7,
-      c: COLORS[(Math.random() * COLORS.length) | 0],
-    };
+    const x = clustered ? bloom.x + gauss() * bloom.r * .62 : Math.random() * W;
+    const y = clustered ? bloom.y + gauss() * bloom.r * .5 : Math.random() * H;
+    const o = p || {};
+    o.x = x; o.y = y;
+    o.life = Math.random() * 300 + 140;
+    o.age = 0;
+    o.w = Math.random() * 1.3 + .5;
+    o.spd = Math.random() * 1.2 + .8;
+    o.c = COLORS[(Math.random() * COLORS.length) | 0];
+    o.pts = [x, y];
+    return o;
   }
 
   function field(x, y, time) {
@@ -476,11 +455,16 @@
 
   const pointer = { x: -9999, y: -9999, active: false };
 
+  // A decaying canvas can't hold a hairline on paper the way an additive one holds a glow,
+  // so each particle carries its own tail and is redrawn whole every frame.
   function frame() {
     t += 16;
-    ctx.fillStyle = 'rgba(8,7,13,.038)';
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = PAPER;
     ctx.fillRect(0, 0, W, H);
-    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
     for (const p of particles) {
       const ang = field(p.x, p.y, t);
@@ -494,25 +478,40 @@
         }
       }
 
-      const nx = p.x + vx, ny = p.y + vy;
-      const fade = 1 - p.age / p.life;
-      const m = mask(nx, ny);
+      p.x += vx; p.y += vy; p.age++;
+      const pts = p.pts;
+      pts.push(p.x, p.y);
+      if (pts.length > TAIL * 2) pts.splice(0, 2);
 
-      if (m > .015) {
-        ctx.strokeStyle = p.c;
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(nx, ny);
-        ctx.globalAlpha = .07 * fade * m;   // halo
-        ctx.lineWidth = p.w * 6;
-        ctx.stroke();
-        ctx.globalAlpha = (.24 + .34 * fade) * m;  // core
-        ctx.lineWidth = p.w;
-        ctx.stroke();
-      }
+      if (p.age > p.life || p.x < -60 || p.x > W + 60 || p.y < -60 || p.y > H + 60) { spawn(p); continue; }
 
-      p.x = nx; p.y = ny; p.age++;
-      if (p.age > p.life || nx < -40 || nx > W + 40 || ny < -40 || ny > H + 40) Object.assign(p, spawn());
+      const n = pts.length / 2;
+      if (n < 3) continue;
+      const m = mask(p.x, p.y);
+      if (m <= .02) continue;
+
+      // fade in on spawn and out at end of life so ribbons never pop
+      const life = Math.min(1, p.age / 22) * Math.min(1, (1 - p.age / p.life) * 3.5);
+      const head = Math.max(2, Math.round(n * .55));   // the recent half carries the pigment
+
+      ctx.strokeStyle = p.c;
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0], pts[1]);
+      for (let i = 1; i < n; i++) ctx.lineTo(pts[i * 2], pts[i * 2 + 1]);
+      ctx.globalAlpha = .07 * life * m;      // the bleed around the line
+      ctx.lineWidth = p.w * 5;
+      ctx.stroke();
+      ctx.globalAlpha = .20 * life * m;      // full-length trail
+      ctx.lineWidth = p.w;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[(n - head) * 2], pts[(n - head) * 2 + 1]);
+      for (let i = n - head + 1; i < n; i++) ctx.lineTo(pts[i * 2], pts[i * 2 + 1]);
+      ctx.globalAlpha = .42 * life * m;      // the head, where the ink is wettest
+      ctx.lineWidth = p.w * 1.25;
+      ctx.stroke();
     }
 
     ctx.globalAlpha = 1;
@@ -532,8 +531,8 @@
   }
   if (reduced) { for (let i = 0; i < 240; i++) frame(); stop(); } else start();
 
-  /* ================= per-paper waveform ================= */
-  // deterministic from the paper's own name, so each strip keeps a stable identity
+  /* ============ per-paper waveform ============ */
+  // deterministic from the paper's own name, so each one keeps a stable identity
   function mulberry32(a) {
     return () => {
       a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -548,10 +547,9 @@
     const c = cv.getContext('2d');
     const rnd = mulberry32(hash(cv.dataset.seed));
     const BARS = 26;
-    // an envelope with a couple of transients — reads as a sound event, not noise
     const amps = Array.from({ length: BARS }, (_, i) => {
       const env = Math.sin((i / (BARS - 1)) * Math.PI) ** .65;
-      const hit = rnd() < .18 ? 1 : .52;
+      const hit = rnd() < .18 ? 1 : .52;     // a couple of transients so it reads as an event
       return Math.max(.12, env * hit * (.45 + rnd() * .55));
     });
     return { cv, c, amps, head: -1 };
@@ -566,7 +564,7 @@
       const h = Math.max(2, a * H2 * .92);
       const x = i * (bw + gap), y = (H2 - h) / 2;
       const near = w.head >= 0 ? Math.max(0, 1 - Math.abs(i - w.head) / 4) : 0;
-      c.fillStyle = near > 0 ? `rgba(232,121,249,${.45 + near * .55})` : 'rgba(214,201,240,.5)';
+      c.fillStyle = near > 0 ? `rgba(109,40,217,${.35 + near * .65})` : 'rgba(20,18,28,.3)';
       c.beginPath();
       c.roundRect(x, y, bw, h, bw / 2);
       c.fill();
@@ -574,7 +572,6 @@
   }
   waves.forEach(drawWave);
 
-  // hover scrubs a playhead across the strip's waveform
   if (!reduced && matchMedia('(pointer: fine)').matches) {
     waves.forEach(w => {
       const strip = w.cv.closest('.strip');
@@ -596,13 +593,13 @@
     });
   }
 
-  /* ================= chrome ================= */
+  /* ============ chrome ============ */
   const bar = document.getElementById('bar');
   const onScroll = () => {
     bar.classList.toggle('stuck', scrollY > 40);
     // hand the page back to the type once the hero is behind you
-    const k = Math.min(1, scrollY / (innerHeight * .85));
-    canvas.style.opacity = (1 - k * .8).toFixed(3);
+    const k = Math.min(1, scrollY / (innerHeight * .8));
+    canvas.style.opacity = (1 - k * .82).toFixed(3);
   };
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -610,7 +607,7 @@
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e, i) => {
       if (!e.isIntersecting) return;
-      setTimeout(() => e.target.classList.add('in'), i * 65);
+      setTimeout(() => e.target.classList.add('in'), i * 60);
       io.unobserve(e.target);
     });
   }, { rootMargin: '0px 0px -10% 0px', threshold: .1 });
