@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Kaicheng Luo — Multimodal Audio Generation</title>
+<meta name="description" content="Kaicheng Luo — M.S. student at the School of Data Science, Fudan University. Research on multimodal audio generation, video-to-audio, and spatial audio. ICLR / ICML / NeurIPS." />
+<meta name="author" content="Kaicheng Luo" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Kaicheng Luo — Multimodal Audio Generation" />
+<meta property="og:description" content="Mathematics @ Zhejiang University → Data Science @ Fudan. Teaching machines to hear and to sound." />
+<meta property="og:url" content="https://lkcqswb.github.io/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0810'/><path d='M28 62V34M28 48l20-14M28 48l20 14M62 34v28' stroke='%23e879f9' stroke-width='7' stroke-linecap='round' fill='none'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#06050b;
+    --bg-2:#0b0912;
+    --ink:#f2eefb;
+    --ink-soft:#b3a9c9;
+    --ink-dim:#7d7391;
+    --line:rgba(180,150,255,.14);
+    --line-strong:rgba(200,170,255,.3);
+    --magenta:#e879f9;
+    --violet:#a78bfa;
+    --cyan:#5eead4;
+    --card:rgba(22,18,34,.5);
+    --shell:min(1180px,100% - 2.5rem);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    font-size:16px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit}
+  ::selection{background:rgba(232,121,249,.3)}
+
+  /* ---------- background layers ---------- */
+  #fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+  .veil{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(120% 80% at 78% 8%, rgba(232,121,249,.16), transparent 55%),
+      radial-gradient(100% 70% at 8% 22%, rgba(124,58,237,.18), transparent 60%),
+      radial-gradient(90% 60% at 50% 105%, rgba(94,234,212,.08), transparent 60%);
+  }
+  .grain{
+    position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 7s steps(6) infinite;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}
+    60%{transform:translate(-2%,-2%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(130% 100% at 50% 40%, transparent 42%, rgba(3,2,8,.72) 100%);
+  }
+
+  /* ---------- shell ---------- */
+  .page{position:relative;z-index:3}
+  .wrap{width:var(--shell);margin-inline:auto}
+
+  /* ---------- nav ---------- */
+  header{position:fixed;top:0;left:0;right:0;z-index:20;padding:1.1rem 0}
+  .navbar{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .sig{
+    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.72rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--ink-soft);text-decoration:none;
+    display:inline-flex;align-items:center;gap:.55rem;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--magenta);box-shadow:0 0 12px var(--magenta);animation:pulse 3s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .pills{display:flex;gap:.4rem;align-items:center}
+  .pill{
+    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.66rem;letter-spacing:.18em;
+    text-transform:uppercase;text-decoration:none;color:var(--ink-soft);
+    padding:.5rem .85rem;border-radius:999px;border:1px solid var(--line);
+    background:rgba(14,11,24,.5);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    transition:color .25s,border-color .25s,background .25s,transform .25s;
+    white-space:nowrap;
+  }
+  .pill:hover{color:var(--ink);border-color:var(--line-strong);background:rgba(232,121,249,.1);transform:translateY(-1px)}
+  @media (max-width:640px){.pills .pill.opt{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{min-height:100svh;display:flex;align-items:center;padding:7rem 0 4rem;position:relative}
+  .eyebrow{
+    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.7rem;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--ink-dim);margin:0 0 1.6rem;
+    display:flex;align-items:center;gap:.7rem;
+  }
+  .eyebrow::after{content:"";height:1px;flex:1;max-width:180px;background:linear-gradient(90deg,var(--line-strong),transparent)}
+  h1{
+    margin:0;font-weight:600;letter-spacing:-.045em;line-height:.92;
+    font-size:clamp(3.2rem,12vw,8.5rem);
+    background:linear-gradient(168deg,#fff 8%,#e9d9ff 42%,var(--magenta) 88%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .lede{
+    margin:1.9rem 0 0;max-width:47ch;font-size:clamp(1.02rem,2.1vw,1.24rem);
+    color:var(--ink-soft);line-height:1.6;
+  }
+  .lede b{color:var(--ink);font-weight:600}
+  .track{
+    margin-top:2.4rem;display:flex;flex-wrap:wrap;align-items:center;gap:.55rem .9rem;
+    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.74rem;letter-spacing:.05em;color:var(--ink-soft);
+  }
+  .track .node{display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap}
+  .track .node::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--violet);box-shadow:0 0 10px var(--violet)}
+  .track .node.now::before{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+  .track .arrow{color:var(--ink-dim)}
+  .cta{margin-top:2.8rem;display:flex;flex-wrap:wrap;gap:.7rem}
+  .btn{
+    display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;
+    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+    padding:.85rem 1.35rem;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink);
+    background:rgba(20,15,34,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    transition:transform .25s,box-shadow .25s,background .25s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(232,121,249,.22);background:rgba(232,121,249,.14)}
+  .btn.solid{background:linear-gradient(135deg,var(--magenta),var(--violet));color:#14001c;border-color:transparent;font-weight:500}
+  .btn.solid:hover{box-shadow:0 14px 46px rgba(232,121,249,.4)}
+  .scroll{
+    position:absolute;bottom:2.2rem;left:50%;transform:translateX(-50%);
+    font-family:"JetBrains Mono",ui-monospace,monospace;
+    font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-dim);
+    display:flex;align-items:center;gap:.7rem;
+  }
+  .scroll::after{content:"";width:52px;height:1px;background:linear-gradient(90deg,var(--line-strong),transparent);animation:slide 2.4s ease-in-out infinite}
+  @keyframes slide{0%,100%{opacity:.3;transform:translateX(0)}50%{opacity:1;transform:translateX(8px)}}
+  @media (max-width:640px){.scroll{display:none}}
+
+  /* ---------- sections ---------- */
+  section.band{padding:6.5rem 0;position:relative}
+  .rule{height:1px;background:linear-gradient(90deg,transparent,var(--line-strong),transparent)}
+  .head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:3rem;flex-wrap:wrap}
+  h2{
+    margin:0;font-size:clamp(1.55rem,4vw,2.5rem);font-weight:600;letter-spacing:-.03em;line-height:1.1;
+  }
+  .idx{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.68rem;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--ink-dim)}
+
+  /* focus grid */
+  .grid3{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(255px,1fr))}
+  .tile{
+    padding:1.7rem;border-radius:16px;border:1px solid var(--line);background:var(--card);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    transition:border-color .3s,transform .3s,background .3s;position:relative;overflow:hidden;
+  }
+  .tile::before{
+    content:"";position:absolute;inset:0;opacity:0;transition:opacity .35s;
+    background:radial-gradient(80% 60% at 20% 0%,rgba(232,121,249,.14),transparent 70%);
+  }
+  .tile:hover{border-color:var(--line-strong);transform:translateY(-3px)}
+  .tile:hover::before{opacity:1}
+  .tile h3{margin:.9rem 0 .5rem;font-size:1.06rem;font-weight:600;letter-spacing:-.01em;position:relative}
+  .tile p{margin:0;color:var(--ink-soft);font-size:.93rem;line-height:1.6;position:relative}
+  .tile .num{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.66rem;letter-spacing:.2em;color:var(--magenta);position:relative}
+
+  /* ---------- papers ---------- */
+  .papers{display:flex;flex-direction:column;gap:1rem}
+  .paper{
+    position:relative;display:block;text-decoration:none;padding:1.9rem;border-radius:18px;
+    border:1px solid var(--line);background:var(--card);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    transform-style:preserve-3d;will-change:transform;
+    transition:border-color .3s,box-shadow .3s;
+  }
+  .paper::after{
+    content:"";position:absolute;inset:0;border-radius:18px;opacity:0;transition:opacity .35s;pointer-events:none;
+    background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),rgba(232,121,249,.13),transparent 65%);
+  }
+  .paper:hover{border-color:var(--line-strong);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .paper:hover::after{opacity:1}
+  .paper:focus-visible{outline:2px solid var(--magenta);outline-offset:3px}
+  .ptop{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem}
+  .venue{
+    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.63rem;letter-spacing:.16em;text-transform:uppercase;
+    padding:.34rem .7rem;border-radius:999px;font-weight:500;
+    border:1px solid rgba(232,121,249,.34);color:var(--magenta);background:rgba(232,121,249,.09);
+  }
+  .venue.icml{border-color:rgba(94,234,212,.34);color:var(--cyan);background:rgba(94,234,212,.08)}
+  .venue.neurips{border-color:rgba(167,139,250,.4);color:var(--violet);background:rgba(167,139,250,.1)}
+  .stars{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.66rem;color:var(--ink-dim);letter-spacing:.06em}
+  .paper h3{
+    margin:0 0 .75rem;font-size:clamp(1.1rem,2.4vw,1.42rem);font-weight:600;
+    letter-spacing:-.022em;line-height:1.3;color:var(--ink);
+  }
+  .authors{margin:0 0 1.1rem;font-size:.87rem;color:var(--ink-dim);line-height:1.65}
+  .authors .me{color:var(--ink);font-weight:600;border-bottom:1px solid rgba(232,121,249,.55);padding-bottom:1px}
+  .plinks{display:flex;gap:1.15rem;flex-wrap:wrap;font-family:"JetBrains Mono",ui-monospace,monospace;
+    font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
+  .plinks span{display:inline-flex;align-items:center;gap:.35rem;transition:color .25s}
+  .paper:hover .plinks span{color:var(--magenta)}
+
+  /* ---------- contact ---------- */
+  .contact-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));margin-top:2.4rem}
+  .ccard{
+    display:flex;flex-direction:column;gap:.35rem;text-decoration:none;padding:1.5rem;border-radius:16px;
+    border:1px solid var(--line);background:var(--card);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    transition:transform .3s,border-color .3s,background .3s;
+  }
+  .ccard:hover{transform:translateY(-3px);border-color:var(--line-strong);background:rgba(232,121,249,.09)}
+  .ccard .k{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.63rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-dim)}
+  .ccard .v{font-size:1rem;font-weight:500;color:var(--ink);word-break:break-word}
+
+  footer{padding:3rem 0 3.5rem;color:var(--ink-dim);font-family:"JetBrains Mono",ui-monospace,monospace;
+    font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+    display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+
+  /* reveal on scroll */
+  .rise{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+  .rise.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .rise{opacity:1;transform:none;transition:none}
+    .grain,.dot,.scroll::after{animation:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<div class="page">
+  <header>
+    <div class="wrap navbar">
+      <a class="sig" href="#top"><span class="dot"></span>Kaicheng&nbsp;Luo</a>
+      <nav class="pills">
+        <a class="pill opt" href="#focus">Research</a>
+        <a class="pill" href="#papers">Papers</a>
+        <a class="pill" href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">Fudan University · School of Data Science</p>
+        <h1>Kaicheng<br />Luo</h1>
+        <p class="lede">
+          I work on <b>multimodal audio generation</b> — teaching models to reason about
+          what a scene should sound like, then synthesize it. Video-to-audio, spatial
+          audio, and chain-of-thought reasoning inside audio foundation models.
+        </p>
+
+        <div class="track">
+          <span class="node">B.S. Mathematics, Zhejiang University</span>
+          <span class="arrow">→</span>
+          <span class="node now">M.S. Data Science, Fudan University</span>
+        </div>
+
+        <div class="cta">
+          <a class="btn solid" href="#papers">Selected Papers <span aria-hidden="true">↓</span></a>
+          <a class="btn" href="https://openreview.net/profile?id=~Kaicheng_Luo1" target="_blank" rel="noopener">OpenReview</a>
+          <a class="btn" href="https://github.com/lkcqswb" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+      <div class="wrap scroll" aria-hidden="true"><span>Scroll</span></div>
+    </section>
+
+    <div class="wrap rule"></div>
+
+    <!-- FOCUS -->
+    <section class="band" id="focus">
+      <div class="wrap">
+        <div class="head rise">
+          <h2>What I&nbsp;work&nbsp;on</h2>
+          <span class="idx">01 / Research</span>
+        </div>
+        <div class="grid3">
+          <article class="tile rise">
+            <span class="num">01</span>
+            <h3>Video-to-Audio Generation</h3>
+            <p>Generating soundtracks that are semantically and temporally aligned to video — the
+               right event, at the right frame, with the right texture.</p>
+          </article>
+          <article class="tile rise">
+            <span class="num">02</span>
+            <h3>Reasoning for Audio</h3>
+            <p>Bringing chain-of-thought into multimodal LLMs so a model can decompose a scene
+               before it generates or edits sound, instead of guessing in one shot.</p>
+          </article>
+          <article class="tile rise">
+            <span class="num">03</span>
+            <h3>Spatial &amp; Immersive Audio</h3>
+            <p>First-order ambisonics from 360° video, plus representation learning and structured
+               regularization for audio autoencoders.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap rule"></div>
+
+    <!-- PAPERS -->
+    <section class="band" id="papers">
+      <div class="wrap">
+        <div class="head rise">
+          <h2>Selected papers</h2>
+          <span class="idx">02 / Publications</span>
+        </div>
+
+        <div class="papers">
+          <a class="paper rise" href="https://openreview.net/forum?id=cIfDKEbAky" target="_blank" rel="noopener">
+            <div class="ptop"><span class="venue">ICLR 2026 · Poster</span></div>
+            <h3>PrismAudio: Decomposed Chain-of-Thought and Multi-dimensional Rewards for Video-to-Audio Generation</h3>
+            <p class="authors">Huadai Liu, <span class="me">Kaicheng Luo</span>, Wen Wang, Qian Chen, Peiwen Sun,
+              Rongjie Huang, Xiangang Li, Jieping Ye, Wei Xue</p>
+            <div class="plinks"><span>OpenReview ↗</span></div>
+          </a>
+
+          <a class="paper rise" href="https://openreview.net/forum?id=SDWG5xr20c" target="_blank" rel="noopener">
+            <div class="ptop"><span class="venue icml">ICML 2026</span></div>
+            <h3>STAR-VAE: Structured Topology-Aware Regularization for Audio Reconstruction and Generation</h3>
+            <p class="authors">Huadai Liu, Wen Wang, <span class="me">Kaicheng Luo</span>, Qian Chen,
+              Xiangang Li, Wei Xue</p>
+            <div class="plinks"><span>OpenReview ↗</span></div>
+          </a>
+
+          <a class="paper rise" href="https://openreview.net/forum?id=mj8VN4MyrO" target="_blank" rel="noopener">
+            <div class="ptop">
+              <span class="venue neurips">NeurIPS 2025 · Poster</span>
+              <span class="stars">★ 1.4k on GitHub</span>
+            </div>
+            <h3>ThinkSound: Chain-of-Thought Reasoning in Multimodal LLMs for Audio Generation and Editing</h3>
+            <p class="authors">Huadai Liu, <span class="me">Kaicheng Luo</span>, Jialei Wang, Wen Wang,
+              Qian Chen, Zhou Zhao, Wei Xue</p>
+            <div class="plinks"><span>OpenReview ↗</span><span data-href="https://github.com/QwenAudio/ThinkSound">Code ↗</span></div>
+          </a>
+
+          <a class="paper rise" href="https://openreview.net/forum?id=qEVxub0h2a" target="_blank" rel="noopener">
+            <div class="ptop">
+              <span class="venue icml">ICML 2025 · Poster</span>
+              <span class="stars">★ 375 on GitHub</span>
+            </div>
+            <h3>OmniAudio: Generating Spatial Audio from 360° Video</h3>
+            <p class="authors">Huadai Liu, Tianyi Luo, <span class="me">Kaicheng Luo</span>, Qikai Jiang,
+              Peiwen Sun, Jialei Wang, Rongjie Huang, Qian Chen, Wen Wang, Xiangtai Li,
+              Shiliang Zhang, Zhijie Yan, Zhou Zhao, Wei Xue</p>
+            <div class="plinks"><span>OpenReview ↗</span><span data-href="https://github.com/liuhuadai/OmniAudio">Code ↗</span></div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap rule"></div>
+
+    <!-- CONTACT -->
+    <section class="band" id="contact">
+      <div class="wrap">
+        <div class="head rise">
+          <h2>Get in touch</h2>
+          <span class="idx">03 / Contact</span>
+        </div>
+        <p class="lede rise">Open to collaboration on audio generation, multimodal reasoning, and
+          anything that makes models listen better.</p>
+        <div class="contact-grid">
+          <a class="ccard rise" href="mailto:kaichengluo114@gmail.com">
+            <span class="k">Email</span><span class="v">kaichengluo114@gmail.com</span>
+          </a>
+          <a class="ccard rise" href="https://openreview.net/profile?id=~Kaicheng_Luo1" target="_blank" rel="noopener">
+            <span class="k">OpenReview</span><span class="v">~Kaicheng_Luo1</span>
+          </a>
+          <a class="ccard rise" href="https://github.com/lkcqswb" target="_blank" rel="noopener">
+            <span class="k">GitHub</span><span class="v">@lkcqswb</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap rule"></div>
+
+    <footer class="wrap">
+      <span>© 2026 Kaicheng Luo</span>
+      <span>Hangzhou → Shanghai</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(() => {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- flow-field particle bloom ---------- */
+  const canvas = document.getElementById('fx');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  let W = 0, H = 0, dpr = 1, particles = [], t = 0, raf = 0;
+  // the bloom is anchored off to one side so the headline keeps clean space
+  const bloom = { x: 0, y: 0, r: 0, wide: false };
+
+  const COLORS = ['#e879f9', '#a78bfa', '#5eead4', '#f0abfc'];
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#06050b';
+    ctx.fillRect(0, 0, W, H);
+
+    bloom.wide = W > 900;
+    bloom.x = W * (bloom.wide ? .72 : .5);
+    bloom.y = H * (bloom.wide ? .44 : .18);
+    bloom.r = Math.max(W, H) * .58;
+
+    seed();
+  }
+
+  // gaussian-ish sample via central limit, in [-1,1]
+  function gauss() {
+    return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+  }
+
+  // 0..1 visibility mask: bright near the bloom, damped over the text column
+  function mask(x, y) {
+    const d = Math.hypot(x - bloom.x, y - bloom.y) / bloom.r;
+    let m = Math.max(0, 1 - d * d);
+    if (bloom.wide) {
+      const edge = W * .52;
+      if (x < edge) m *= Math.max(.06, (x / edge) ** 2.2);
+    } else {
+      m *= .6; // narrow screens: the bloom sits behind the type, so keep it quieter
+    }
+    return m;
+  }
+
+  function seed() {
+    const density = Math.round((W * H) / 3200);
+    const count = Math.max(140, Math.min(reduced ? 200 : 620, density));
+    particles = Array.from({ length: count }, () => spawn());
+  }
+
+  function spawn() {
+    // most particles cluster around the bloom; a few drift anywhere for ambience
+    const clustered = Math.random() < .82;
+    const x = clustered ? bloom.x + gauss() * bloom.r * .62 : Math.random() * W;
+    const y = clustered ? bloom.y + gauss() * bloom.r * .5 : Math.random() * H;
+    return {
+      x, y,
+      life: Math.random() * 260 + 90,
+      age: 0,
+      w: Math.random() * 1.5 + .35,
+      spd: Math.random() * 1.1 + .7,
+      c: COLORS[(Math.random() * COLORS.length) | 0],
+    };
+  }
+
+  // cheap smooth pseudo-noise: sum of sines, no lookup tables
+  function field(x, y, time) {
+    const a = Math.sin(x * .0016 + time * .00022) * Math.cos(y * .0013 - time * .00017);
+    const b = Math.sin((x + y) * .0009 - time * .00031);
+    // higher-frequency octave adds curl so streaks swirl instead of falling in parallel
+    const c = Math.sin(x * .0052 - y * .0047 + time * .00045) * .55;
+    return (a + b + c) * Math.PI;
+  }
+
+  const pointer = { x: -9999, y: -9999, active: false };
+
+  function frame() {
+    t += 16;
+    // trail fade — low alpha lets streaks accumulate into a bloom
+    ctx.fillStyle = 'rgba(6,5,11,.038)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+
+    for (const p of particles) {
+      const ang = field(p.x, p.y, t);
+      let vx = Math.cos(ang) * p.spd;
+      let vy = Math.sin(ang) * p.spd;
+
+      if (pointer.active) {
+        const dx = p.x - pointer.x, dy = p.y - pointer.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 42000 && d2 > 1) {
+          const f = (42000 - d2) / 42000;
+          const inv = 1 / Math.sqrt(d2);
+          vx += dx * inv * f * 2.4;
+          vy += dy * inv * f * 2.4;
+        }
+      }
+
+      const nx = p.x + vx, ny = p.y + vy;
+      const fade = 1 - p.age / p.life;
+      const m = mask(nx, ny);
+
+      if (m > .015) {
+        ctx.strokeStyle = p.c;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(nx, ny);
+
+        // halo pass: wide + faint, additive blending turns overlaps into glow
+        ctx.globalAlpha = .07 * fade * m;
+        ctx.lineWidth = p.w * 6;
+        ctx.stroke();
+
+        // core pass: thin + bright
+        ctx.globalAlpha = (.24 + .34 * fade) * m;
+        ctx.lineWidth = p.w;
+        ctx.stroke();
+      }
+
+      p.x = nx; p.y = ny; p.age++;
+      if (p.age > p.life || nx < -40 || nx > W + 40 || ny < -40 || ny > H + 40) {
+        Object.assign(p, spawn());
+      }
+    }
+
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    raf = requestAnimationFrame(frame);
+  }
+
+  function start() { if (!raf) raf = requestAnimationFrame(frame); }
+  function stop() { cancelAnimationFrame(raf); raf = 0; }
+
+  resize();
+  addEventListener('resize', resize, { passive: true });
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+
+  if (matchMedia('(pointer: fine)').matches) {
+    addEventListener('pointermove', e => {
+      pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true;
+    }, { passive: true });
+    addEventListener('pointerleave', () => { pointer.active = false; }, { passive: true });
+  }
+
+  if (reduced) {
+    // one static pass: texture without motion
+    for (let i = 0; i < 240; i++) frame();
+    stop();
+  } else {
+    start();
+  }
+
+  /* ---------- reveal on scroll ---------- */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      setTimeout(() => el.classList.add('in'), i * 70);
+      io.unobserve(el);
+    });
+  }, { rootMargin: '0px 0px -12% 0px', threshold: .1 });
+  document.querySelectorAll('.rise').forEach(el => io.observe(el));
+
+  /* ---------- card tilt + glow follow ---------- */
+  if (matchMedia('(pointer: fine)').matches && !reduced) {
+    document.querySelectorAll('.paper').forEach(card => {
+      card.addEventListener('pointermove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width;
+        const py = (e.clientY - r.top) / r.height;
+        card.style.setProperty('--mx', px * 100 + '%');
+        card.style.setProperty('--my', py * 100 + '%');
+        card.style.transform =
+          `perspective(1000px) rotateX(${(.5 - py) * 4}deg) rotateY(${(px - .5) * 5}deg) translateY(-3px)`;
+      });
+      card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+    });
+  }
+
+  /* ---------- nested "Code ↗" links inside anchor cards ---------- */
+  document.querySelectorAll('.plinks span[data-href]').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      open(el.dataset.href, '_blank', 'noopener');
+    });
+  });
+})();
+</script>
+</body>
+</html>
