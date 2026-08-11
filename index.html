@@ -3,231 +3,221 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Kaicheng Luo — Multimodal Audio Generation</title>
-<meta name="description" content="Kaicheng Luo — M.S. student at the School of Data Science, Fudan University. Research on multimodal audio generation, video-to-audio, and spatial audio. ICLR / ICML / NeurIPS." />
+<title>Kaicheng Luo — Sound from Vision</title>
+<meta name="description" content="Kaicheng Luo — M.S. student, School of Data Science, Fudan University. Video-to-audio generation, spatial audio, and reasoning in audio foundation models. ICLR / ICML / NeurIPS." />
 <meta name="author" content="Kaicheng Luo" />
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Kaicheng Luo — Multimodal Audio Generation" />
-<meta property="og:description" content="Mathematics @ Zhejiang University → Data Science @ Fudan. Teaching machines to hear and to sound." />
+<meta property="og:title" content="Kaicheng Luo — Sound from Vision" />
+<meta property="og:description" content="Mathematics at Zhejiang University, data science at Fudan. I build models that watch a scene and generate what it should sound like." />
 <meta property="og:url" content="https://lkcqswb.github.io/" />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230a0810'/><path d='M28 62V34M28 48l20-14M28 48l20 14M62 34v28' stroke='%23e879f9' stroke-width='7' stroke-linecap='round' fill='none'/></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2308070d'/><g fill='%23e879f9'><rect x='14' y='42' width='7' height='16' rx='3'/><rect x='28' y='30' width='7' height='40' rx='3'/><rect x='42' y='16' width='7' height='68' rx='3'/><rect x='56' y='34' width='7' height='32' rx='3'/><rect x='70' y='24' width='7' height='52' rx='3'/></g></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110..125,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#06050b;
-    --bg-2:#0b0912;
-    --ink:#f2eefb;
-    --ink-soft:#b3a9c9;
-    --ink-dim:#7d7391;
-    --line:rgba(180,150,255,.14);
-    --line-strong:rgba(200,170,255,.3);
-    --magenta:#e879f9;
-    --violet:#a78bfa;
-    --cyan:#5eead4;
-    --card:rgba(22,18,34,.5);
-    --shell:min(1180px,100% - 2.5rem);
+    /* one chromatic event (the bloom + signal); everything else is bone on void */
+    --void:#08070d;
+    --panel:rgba(17,14,26,.44);
+    --bone:#EDE9F5;
+    --dim:#8B8399;
+    --dimmer:#5F5872;
+    --wire:rgba(198,178,240,.13);
+    --wire-lit:rgba(214,196,255,.28);
+    --signal:#E879F9;
+    --now:#5EEAD4;
+
+    --display:'Archivo','Helvetica Neue',Arial,sans-serif;
+    --body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+
+    --shell:min(1160px,100% - 2.5rem);
+    --gutter:76px;
   }
   *,*::before,*::after{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
   body{
-    margin:0;
-    background:var(--bg);
-    color:var(--ink);
-    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-    font-size:16px;line-height:1.65;
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
+    margin:0;background:var(--void);color:var(--bone);
+    font-family:var(--body);font-size:16px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
   }
   a{color:inherit}
-  ::selection{background:rgba(232,121,249,.3)}
+  ::selection{background:rgba(232,121,249,.28)}
+  :focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:2px}
 
-  /* ---------- background layers ---------- */
-  #fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
-  .veil{
-    position:fixed;inset:0;z-index:1;pointer-events:none;
-    background:
-      radial-gradient(120% 80% at 78% 8%, rgba(232,121,249,.16), transparent 55%),
-      radial-gradient(100% 70% at 8% 22%, rgba(124,58,237,.18), transparent 60%),
-      radial-gradient(90% 60% at 50% 105%, rgba(94,234,212,.08), transparent 60%);
-  }
-  .grain{
-    position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.05;
+  .lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+
+  /* ---------- background ---------- */
+  /* the bloom is the hero's event; below the fold it recedes to atmosphere */
+  #fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;will-change:opacity}
+  .veil,.vignette,.grain{position:fixed;inset:0;z-index:1;pointer-events:none}
+  .veil{background:
+      radial-gradient(120% 80% at 78% 8%, rgba(232,121,249,.15), transparent 55%),
+      radial-gradient(100% 70% at 8% 22%, rgba(124,58,237,.16), transparent 60%);}
+  .vignette{z-index:2;background:radial-gradient(130% 100% at 50% 40%, transparent 44%, rgba(3,2,8,.76) 100%)}
+  .grain{z-index:2;inset:-50%;opacity:.045;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-    animation:grain 7s steps(6) infinite;
-  }
-  @keyframes grain{
-    0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}
-    60%{transform:translate(-2%,-2%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
-  }
-  .vignette{
-    position:fixed;inset:0;z-index:2;pointer-events:none;
-    background:radial-gradient(130% 100% at 50% 40%, transparent 42%, rgba(3,2,8,.72) 100%);
-  }
+    animation:grain 7s steps(6) infinite}
+  @keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}
+    60%{transform:translate(-2%,-2%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
 
-  /* ---------- shell ---------- */
   .page{position:relative;z-index:3}
-  .wrap{width:var(--shell);margin-inline:auto}
+  .shell{width:var(--shell);margin-inline:auto}
 
-  /* ---------- nav ---------- */
-  header{position:fixed;top:0;left:0;right:0;z-index:20;padding:1.1rem 0}
-  .navbar{display:flex;align-items:center;justify-content:space-between;gap:1rem}
-  .sig{
-    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.72rem;letter-spacing:.22em;
-    text-transform:uppercase;color:var(--ink-soft);text-decoration:none;
-    display:inline-flex;align-items:center;gap:.55rem;
-  }
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--magenta);box-shadow:0 0 12px var(--magenta);animation:pulse 3s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-  .pills{display:flex;gap:.4rem;align-items:center}
-  .pill{
-    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.66rem;letter-spacing:.18em;
-    text-transform:uppercase;text-decoration:none;color:var(--ink-soft);
-    padding:.5rem .85rem;border-radius:999px;border:1px solid var(--line);
-    background:rgba(14,11,24,.5);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    transition:color .25s,border-color .25s,background .25s,transform .25s;
-    white-space:nowrap;
-  }
-  .pill:hover{color:var(--ink);border-color:var(--line-strong);background:rgba(232,121,249,.1);transform:translateY(-1px)}
-  @media (max-width:640px){.pills .pill.opt{display:none}}
+  /* ---------- top bar ---------- */
+  .bar{position:fixed;top:0;left:0;right:0;z-index:20;border-bottom:1px solid transparent;
+    background:transparent;transition:background .4s,border-color .4s,backdrop-filter .4s}
+  .bar.stuck{background:rgba(8,7,13,.72);border-bottom-color:var(--wire);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+  .bar-in{display:flex;align-items:center;justify-content:space-between;gap:1rem;height:60px}
+  .mark{display:inline-flex;align-items:center;gap:.6rem;text-decoration:none}
+  .mark .eq{display:flex;align-items:flex-end;gap:2px;height:13px}
+  .mark .eq i{width:2px;background:var(--signal);border-radius:1px;animation:eq 1.5s ease-in-out infinite}
+  .mark .eq i:nth-child(1){height:5px;animation-delay:0s}
+  .mark .eq i:nth-child(2){height:12px;animation-delay:.18s}
+  .mark .eq i:nth-child(3){height:8px;animation-delay:.36s}
+  .mark .eq i:nth-child(4){height:13px;animation-delay:.54s}
+  @keyframes eq{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+  .mark span{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone)}
+  .links{display:flex;gap:1.6rem}
+  .links a{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--dim);text-decoration:none;position:relative;padding:.3rem 0;transition:color .25s}
+  .links a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;
+    background:var(--signal);transition:right .3s cubic-bezier(.22,1,.36,1)}
+  .links a:hover{color:var(--bone)}
+  .links a:hover::after{right:0}
 
   /* ---------- hero ---------- */
-  .hero{min-height:100svh;display:flex;align-items:center;padding:7rem 0 4rem;position:relative}
-  .eyebrow{
-    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.7rem;letter-spacing:.26em;
-    text-transform:uppercase;color:var(--ink-dim);margin:0 0 1.6rem;
-    display:flex;align-items:center;gap:.7rem;
+  .hero{min-height:100svh;display:flex;align-items:center;padding:7.5rem 0 4.5rem}
+  .kicker{display:flex;align-items:center;gap:.85rem;margin:0 0 2rem}
+  .kicker .bead{width:6px;height:6px;border-radius:50%;background:var(--now);box-shadow:0 0 12px var(--now);flex:none}
+  .name{
+    font-family:var(--display);font-weight:700;font-stretch:122%;
+    font-size:clamp(3.4rem,11.5vw,8.2rem);line-height:.86;letter-spacing:-.035em;
+    margin:0;color:var(--bone);text-transform:uppercase;
   }
-  .eyebrow::after{content:"";height:1px;flex:1;max-width:180px;background:linear-gradient(90deg,var(--line-strong),transparent)}
-  h1{
-    margin:0;font-weight:600;letter-spacing:-.045em;line-height:.92;
-    font-size:clamp(3.2rem,12vw,8.5rem);
-    background:linear-gradient(168deg,#fff 8%,#e9d9ff 42%,var(--magenta) 88%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
+  .name .b{display:block;overflow:hidden}
+  .name .b > i{display:block;font-style:normal;transform:translateY(105%);animation:rise .95s cubic-bezier(.16,1,.3,1) forwards}
+  .name .b:nth-child(2) > i{animation-delay:.09s}
+  @keyframes rise{to{transform:none}}
+  .thesis{
+    margin:2.1rem 0 0;max-width:44ch;font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.55;color:#CFC7DE;
   }
-  .lede{
-    margin:1.9rem 0 0;max-width:47ch;font-size:clamp(1.02rem,2.1vw,1.24rem);
-    color:var(--ink-soft);line-height:1.6;
-  }
-  .lede b{color:var(--ink);font-weight:600}
-  .track{
-    margin-top:2.4rem;display:flex;flex-wrap:wrap;align-items:center;gap:.55rem .9rem;
-    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.74rem;letter-spacing:.05em;color:var(--ink-soft);
-  }
-  .track .node{display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap}
-  .track .node::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--violet);box-shadow:0 0 10px var(--violet)}
-  .track .node.now::before{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
-  .track .arrow{color:var(--ink-dim)}
-  .cta{margin-top:2.8rem;display:flex;flex-wrap:wrap;gap:.7rem}
-  .btn{
-    display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;
-    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
-    padding:.85rem 1.35rem;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink);
-    background:rgba(20,15,34,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    transition:transform .25s,box-shadow .25s,background .25s;
-  }
-  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(232,121,249,.22);background:rgba(232,121,249,.14)}
-  .btn.solid{background:linear-gradient(135deg,var(--magenta),var(--violet));color:#14001c;border-color:transparent;font-weight:500}
-  .btn.solid:hover{box-shadow:0 14px 46px rgba(232,121,249,.4)}
-  .scroll{
-    position:absolute;bottom:2.2rem;left:50%;transform:translateX(-50%);
-    font-family:"JetBrains Mono",ui-monospace,monospace;
-    font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-dim);
-    display:flex;align-items:center;gap:.7rem;
-  }
-  .scroll::after{content:"";width:52px;height:1px;background:linear-gradient(90deg,var(--line-strong),transparent);animation:slide 2.4s ease-in-out infinite}
-  @keyframes slide{0%,100%{opacity:.3;transform:translateX(0)}50%{opacity:1;transform:translateX(8px)}}
-  @media (max-width:640px){.scroll{display:none}}
+  .thesis em{font-style:normal;color:var(--bone);box-shadow:inset 0 -.42em 0 rgba(232,121,249,.2)}
 
-  /* ---------- sections ---------- */
-  section.band{padding:6.5rem 0;position:relative}
-  .rule{height:1px;background:linear-gradient(90deg,transparent,var(--line-strong),transparent)}
-  .head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:3rem;flex-wrap:wrap}
-  h2{
-    margin:0;font-size:clamp(1.55rem,4vw,2.5rem);font-weight:600;letter-spacing:-.03em;line-height:1.1;
-  }
-  .idx{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.68rem;letter-spacing:.24em;
-    text-transform:uppercase;color:var(--ink-dim)}
+  /* education rail — a real two-node track, not bullets */
+  .rail{margin-top:3rem;max-width:640px}
+  .rail-line{display:flex;align-items:center;gap:0}
+  .rail-line .node{width:9px;height:9px;border-radius:50%;background:var(--dimmer);flex:none;position:relative}
+  .rail-line .node.live{background:var(--now);box-shadow:0 0 0 4px rgba(94,234,212,.13),0 0 14px var(--now)}
+  .rail-line .seg{height:1px;flex:1;background:linear-gradient(90deg,var(--dimmer),var(--now))}
+  .rail-meta{display:flex;justify-content:space-between;gap:1.2rem;margin-top:.85rem}
+  .rail-meta div{display:flex;flex-direction:column;gap:.2rem}
+  .rail-meta .to{text-align:right}
+  .rail-meta .school{font-size:.92rem;color:var(--bone);font-weight:500}
+  .rail-meta .deg{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
 
-  /* focus grid */
-  .grid3{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(255px,1fr))}
-  .tile{
-    padding:1.7rem;border-radius:16px;border:1px solid var(--line);background:var(--card);
-    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-    transition:border-color .3s,transform .3s,background .3s;position:relative;overflow:hidden;
-  }
-  .tile::before{
-    content:"";position:absolute;inset:0;opacity:0;transition:opacity .35s;
-    background:radial-gradient(80% 60% at 20% 0%,rgba(232,121,249,.14),transparent 70%);
-  }
-  .tile:hover{border-color:var(--line-strong);transform:translateY(-3px)}
-  .tile:hover::before{opacity:1}
-  .tile h3{margin:.9rem 0 .5rem;font-size:1.06rem;font-weight:600;letter-spacing:-.01em;position:relative}
-  .tile p{margin:0;color:var(--ink-soft);font-size:.93rem;line-height:1.6;position:relative}
-  .tile .num{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.66rem;letter-spacing:.2em;color:var(--magenta);position:relative}
+  .acts{margin-top:3rem;display:flex;flex-wrap:wrap;gap:.6rem}
+  .act{display:inline-flex;align-items:center;gap:.6rem;text-decoration:none;font-family:var(--mono);
+    font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;padding:.8rem 1.25rem;
+    border:1px solid var(--wire);color:var(--bone);background:rgba(14,12,22,.5);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    transition:border-color .25s,background .25s,transform .25s}
+  .act:hover{border-color:var(--wire-lit);background:rgba(232,121,249,.1);transform:translateY(-1px)}
+  .act.lead{background:var(--signal);color:#12000f;border-color:var(--signal);font-weight:500}
+  .act.lead:hover{background:#f0a5ff;transform:translateY(-1px)}
 
-  /* ---------- papers ---------- */
-  .papers{display:flex;flex-direction:column;gap:1rem}
-  .paper{
-    position:relative;display:block;text-decoration:none;padding:1.9rem;border-radius:18px;
-    border:1px solid var(--line);background:var(--card);
-    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-    transform-style:preserve-3d;will-change:transform;
-    transition:border-color .3s,box-shadow .3s;
-  }
-  .paper::after{
-    content:"";position:absolute;inset:0;border-radius:18px;opacity:0;transition:opacity .35s;pointer-events:none;
-    background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),rgba(232,121,249,.13),transparent 65%);
-  }
-  .paper:hover{border-color:var(--line-strong);box-shadow:0 20px 60px rgba(0,0,0,.5)}
-  .paper:hover::after{opacity:1}
-  .paper:focus-visible{outline:2px solid var(--magenta);outline-offset:3px}
-  .ptop{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem}
-  .venue{
-    font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.63rem;letter-spacing:.16em;text-transform:uppercase;
-    padding:.34rem .7rem;border-radius:999px;font-weight:500;
-    border:1px solid rgba(232,121,249,.34);color:var(--magenta);background:rgba(232,121,249,.09);
-  }
-  .venue.icml{border-color:rgba(94,234,212,.34);color:var(--cyan);background:rgba(94,234,212,.08)}
-  .venue.neurips{border-color:rgba(167,139,250,.4);color:var(--violet);background:rgba(167,139,250,.1)}
-  .stars{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.66rem;color:var(--ink-dim);letter-spacing:.06em}
-  .paper h3{
-    margin:0 0 .75rem;font-size:clamp(1.1rem,2.4vw,1.42rem);font-weight:600;
-    letter-spacing:-.022em;line-height:1.3;color:var(--ink);
-  }
-  .authors{margin:0 0 1.1rem;font-size:.87rem;color:var(--ink-dim);line-height:1.65}
-  .authors .me{color:var(--ink);font-weight:600;border-bottom:1px solid rgba(232,121,249,.55);padding-bottom:1px}
-  .plinks{display:flex;gap:1.15rem;flex-wrap:wrap;font-family:"JetBrains Mono",ui-monospace,monospace;
-    font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
-  .plinks span{display:inline-flex;align-items:center;gap:.35rem;transition:color .25s}
-  .paper:hover .plinks span{color:var(--magenta)}
+  /* ---------- section frames ---------- */
+  .band{padding:7rem 0}
+  .band-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:.4rem 1.2rem;margin-bottom:3.4rem;
+    padding-bottom:1.1rem;border-bottom:1px solid var(--wire)}
+  .band-head h2{margin:0;font-family:var(--display);font-weight:700;font-stretch:118%;
+    text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(1.4rem,3.4vw,2.1rem);line-height:1}
+  .band-head .count{margin-left:auto;flex:none}
+  #interests .band-head,#contact .band-head{margin-bottom:1.6rem}
 
-  /* ---------- contact ---------- */
-  .contact-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));margin-top:2.4rem}
-  .ccard{
-    display:flex;flex-direction:column;gap:.35rem;text-decoration:none;padding:1.5rem;border-radius:16px;
-    border:1px solid var(--line);background:var(--card);
-    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-    transition:transform .3s,border-color .3s,background .3s;
+  /* ---------- papers: channel strips on a year rail ---------- */
+  .tape{position:relative}
+  .year{display:grid;grid-template-columns:var(--gutter) 1fr;align-items:start}
+  .year-tag{position:sticky;top:84px;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
+    color:var(--dim);padding-top:1.5rem}
+  .year-tracks{border-left:1px solid var(--wire);padding-left:0}
+  .strip{
+    display:block;text-decoration:none;position:relative;
+    padding:1.7rem 1.6rem 1.7rem 1.9rem;border-bottom:1px solid var(--wire);
+    transition:background .3s;
   }
-  .ccard:hover{transform:translateY(-3px);border-color:var(--line-strong);background:rgba(232,121,249,.09)}
-  .ccard .k{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.63rem;letter-spacing:.2em;
-    text-transform:uppercase;color:var(--ink-dim)}
-  .ccard .v{font-size:1rem;font-weight:500;color:var(--ink);word-break:break-word}
+  .strip::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;
+    background:var(--signal);transform:scaleY(0);transform-origin:top;
+    transition:transform .4s cubic-bezier(.22,1,.36,1)}
+  .strip:hover{background:rgba(232,121,249,.045)}
+  .strip:hover::before,.strip:focus-visible::before{transform:scaleY(1)}
+  .strip-top{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem 1rem;margin-bottom:.9rem}
+  .wave{width:104px;height:26px;flex:none;opacity:.55;transition:opacity .3s}
+  .strip:hover .wave{opacity:1}
+  .venue{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .venue b{color:var(--bone);font-weight:500}
+  .repo{margin-left:auto;font-family:var(--mono);font-size:.66rem;color:var(--dimmer);letter-spacing:.06em;white-space:nowrap}
+  .strip h3{margin:0 0 .5rem;font-family:var(--display);font-weight:700;font-stretch:112%;
+    font-size:clamp(1.25rem,2.6vw,1.65rem);letter-spacing:-.018em;line-height:1.1;color:var(--bone)}
+  .sub{margin:0 0 1rem;font-size:1rem;color:#B9B1C9;line-height:1.5;max-width:62ch}
+  .byline{margin:0;font-size:.85rem;color:var(--dimmer);line-height:1.6;max-width:70ch}
+  .byline .me{color:var(--bone);font-weight:500}
+  .strip-links{margin-top:1.1rem;display:flex;gap:1.3rem;font-family:var(--mono);font-size:.66rem;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .strip-links span{transition:color .25s}
+  .strip-links span:hover,.strip:hover .strip-links .primary{color:var(--signal)}
 
-  footer{padding:3rem 0 3.5rem;color:var(--ink-dim);font-family:"JetBrains Mono",ui-monospace,monospace;
-    font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
-    display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+  /* ---------- interests: hairline list, no boxes ---------- */
+  .areas{display:grid;gap:0;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .area{padding:1.8rem 1.6rem 1.8rem 0;border-top:1px solid var(--wire)}
+  .area h3{margin:0 0 .6rem;font-size:1rem;font-weight:500;color:var(--bone);letter-spacing:-.005em}
+  .area p{margin:0;font-size:.93rem;color:var(--dim);line-height:1.6;max-width:34ch}
 
-  /* reveal on scroll */
-  .rise{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+  /* ---------- contact: hairline rows ---------- */
+  .rows{border-top:1px solid var(--wire)}
+  .row{display:flex;align-items:center;gap:1.2rem;padding:1.35rem .2rem;border-bottom:1px solid var(--wire);
+    text-decoration:none;transition:padding-left .3s,background .3s}
+  .row:hover{padding-left:1rem;background:rgba(232,121,249,.045)}
+  .row .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--dim);width:110px;flex:none}
+  .row .v{font-size:1.02rem;color:var(--bone);word-break:break-word}
+  .row .go{margin-left:auto;color:var(--dimmer);transition:color .25s,transform .3s;flex:none}
+  .row:hover .go{color:var(--signal);transform:translateX(4px)}
+
+  .foot{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+    padding:2.5rem 0 3rem;border-top:1px solid var(--wire)}
+
+  /* ---------- reveal ---------- */
+  .rise{opacity:0;transform:translateY(20px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1)}
   .rise.in{opacity:1;transform:none}
+
+  @media (max-width:760px){
+    :root{--gutter:52px}
+    .band{padding:4.5rem 0}
+    .rail-meta{flex-direction:column;gap:1rem}
+    .rail-meta .to{text-align:left}
+    .year-tag{position:static;padding-top:0;margin-bottom:.6rem}
+    .year{grid-template-columns:1fr}
+    .year-tracks{border-left:none;padding-left:0}
+    .strip{padding:1.5rem 0}
+    .strip::before{left:-10px}
+    .row .k{width:88px}
+    .area{padding-right:0}
+    .repo{margin-left:0;order:3;flex-basis:100%}
+    .links{gap:1.1rem}
+  }
+  @media (max-width:620px){
+    .mark span{display:none}       /* the meter alone carries the mark once space is tight */
+    /* KAICHENG has to fit the measure — narrow the width axis before shrinking the size */
+    .name{font-size:13.2vw;font-stretch:112%}
+  }
   @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
     .rise{opacity:1;transform:none;transition:none}
-    .grain,.dot,.scroll::after{animation:none}
+    .grain,.mark .eq i{animation:none}
+    .name .b > i{transform:none;animation:none}
   }
 </style>
 </head>
@@ -238,160 +228,183 @@
 <div class="vignette" aria-hidden="true"></div>
 
 <div class="page">
-  <header>
-    <div class="wrap navbar">
-      <a class="sig" href="#top"><span class="dot"></span>Kaicheng&nbsp;Luo</a>
-      <nav class="pills">
-        <a class="pill opt" href="#focus">Research</a>
-        <a class="pill" href="#papers">Papers</a>
-        <a class="pill" href="#contact">Contact</a>
+  <div class="bar" id="bar">
+    <div class="shell bar-in">
+      <a class="mark" href="#top" aria-label="Kaicheng Luo, home">
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span>Kaicheng Luo</span>
+      </a>
+      <nav class="links">
+        <a href="#papers">Papers</a>
+        <a href="#interests">Interests</a>
+        <a href="#contact">Contact</a>
       </nav>
     </div>
-  </header>
+  </div>
 
   <main id="top">
-    <!-- HERO -->
     <section class="hero">
-      <div class="wrap">
-        <p class="eyebrow">Fudan University · School of Data Science</p>
-        <h1>Kaicheng<br />Luo</h1>
-        <p class="lede">
-          I work on <b>multimodal audio generation</b> — teaching models to reason about
-          what a scene should sound like, then synthesize it. Video-to-audio, spatial
-          audio, and chain-of-thought reasoning inside audio foundation models.
-        </p>
+      <div class="shell">
+        <p class="kicker"><span class="bead" aria-hidden="true"></span>
+          <span class="lbl">M.S. student · School of Data Science · Fudan University</span></p>
 
-        <div class="track">
-          <span class="node">B.S. Mathematics, Zhejiang University</span>
-          <span class="arrow">→</span>
-          <span class="node now">M.S. Data Science, Fudan University</span>
+        <h1 class="name"><span class="b"><i>Kaicheng</i></span><span class="b"><i>Luo</i></span></h1>
+
+        <p class="thesis">I build models that watch a scene and generate <em>what it should sound
+          like</em> — the right event, on the right frame, in the right place.</p>
+
+        <div class="rail">
+          <div class="rail-line" aria-hidden="true">
+            <span class="node"></span><span class="seg"></span><span class="node live"></span>
+          </div>
+          <div class="rail-meta">
+            <div>
+              <span class="school">Zhejiang University</span>
+              <span class="deg">B.S. Mathematics</span>
+            </div>
+            <div class="to">
+              <span class="school">Fudan University</span>
+              <span class="deg">M.S. Data Science · current</span>
+            </div>
+          </div>
         </div>
 
-        <div class="cta">
-          <a class="btn solid" href="#papers">Selected Papers <span aria-hidden="true">↓</span></a>
-          <a class="btn" href="https://openreview.net/profile?id=~Kaicheng_Luo1" target="_blank" rel="noopener">OpenReview</a>
-          <a class="btn" href="https://github.com/lkcqswb" target="_blank" rel="noopener">GitHub</a>
-        </div>
-      </div>
-      <div class="wrap scroll" aria-hidden="true"><span>Scroll</span></div>
-    </section>
-
-    <div class="wrap rule"></div>
-
-    <!-- FOCUS -->
-    <section class="band" id="focus">
-      <div class="wrap">
-        <div class="head rise">
-          <h2>What I&nbsp;work&nbsp;on</h2>
-          <span class="idx">01 / Research</span>
-        </div>
-        <div class="grid3">
-          <article class="tile rise">
-            <span class="num">01</span>
-            <h3>Video-to-Audio Generation</h3>
-            <p>Generating soundtracks that are semantically and temporally aligned to video — the
-               right event, at the right frame, with the right texture.</p>
-          </article>
-          <article class="tile rise">
-            <span class="num">02</span>
-            <h3>Reasoning for Audio</h3>
-            <p>Bringing chain-of-thought into multimodal LLMs so a model can decompose a scene
-               before it generates or edits sound, instead of guessing in one shot.</p>
-          </article>
-          <article class="tile rise">
-            <span class="num">03</span>
-            <h3>Spatial &amp; Immersive Audio</h3>
-            <p>First-order ambisonics from 360° video, plus representation learning and structured
-               regularization for audio autoencoders.</p>
-          </article>
+        <div class="acts">
+          <a class="act lead" href="#papers">Four papers ↓</a>
+          <a class="act" href="https://openreview.net/profile?id=~Kaicheng_Luo1" target="_blank" rel="noopener">OpenReview</a>
+          <a class="act" href="https://github.com/lkcqswb" target="_blank" rel="noopener">GitHub</a>
         </div>
       </div>
     </section>
-
-    <div class="wrap rule"></div>
 
     <!-- PAPERS -->
     <section class="band" id="papers">
-      <div class="wrap">
-        <div class="head rise">
-          <h2>Selected papers</h2>
-          <span class="idx">02 / Publications</span>
+      <div class="shell">
+        <div class="band-head rise">
+          <h2>Papers</h2>
+          <span class="lbl count">Four · 2025–2026</span>
         </div>
 
-        <div class="papers">
-          <a class="paper rise" href="https://openreview.net/forum?id=cIfDKEbAky" target="_blank" rel="noopener">
-            <div class="ptop"><span class="venue">ICLR 2026 · Poster</span></div>
-            <h3>PrismAudio: Decomposed Chain-of-Thought and Multi-dimensional Rewards for Video-to-Audio Generation</h3>
-            <p class="authors">Huadai Liu, <span class="me">Kaicheng Luo</span>, Wen Wang, Qian Chen, Peiwen Sun,
-              Rongjie Huang, Xiangang Li, Jieping Ye, Wei Xue</p>
-            <div class="plinks"><span>OpenReview ↗</span></div>
-          </a>
+        <div class="tape">
+          <div class="year">
+            <div class="year-tag">2026</div>
+            <div class="year-tracks">
+              <a class="strip rise" href="https://openreview.net/forum?id=cIfDKEbAky" target="_blank" rel="noopener">
+                <div class="strip-top">
+                  <canvas class="wave" data-seed="PrismAudio" width="208" height="52" aria-hidden="true"></canvas>
+                  <span class="venue"><b>ICLR 2026</b> · Poster</span>
+                </div>
+                <h3>PrismAudio</h3>
+                <p class="sub">Decomposed chain-of-thought and multi-dimensional rewards for video-to-audio generation.</p>
+                <p class="byline">Huadai Liu, <span class="me">Kaicheng Luo</span>, Wen Wang, Qian Chen,
+                  Peiwen Sun, Rongjie Huang, Xiangang Li, Jieping Ye, Wei Xue</p>
+                <div class="strip-links"><span class="primary">OpenReview ↗</span></div>
+              </a>
 
-          <a class="paper rise" href="https://openreview.net/forum?id=SDWG5xr20c" target="_blank" rel="noopener">
-            <div class="ptop"><span class="venue icml">ICML 2026</span></div>
-            <h3>STAR-VAE: Structured Topology-Aware Regularization for Audio Reconstruction and Generation</h3>
-            <p class="authors">Huadai Liu, Wen Wang, <span class="me">Kaicheng Luo</span>, Qian Chen,
-              Xiangang Li, Wei Xue</p>
-            <div class="plinks"><span>OpenReview ↗</span></div>
-          </a>
-
-          <a class="paper rise" href="https://openreview.net/forum?id=mj8VN4MyrO" target="_blank" rel="noopener">
-            <div class="ptop">
-              <span class="venue neurips">NeurIPS 2025 · Poster</span>
-              <span class="stars">★ 1.4k on GitHub</span>
+              <a class="strip rise" href="https://openreview.net/forum?id=SDWG5xr20c" target="_blank" rel="noopener">
+                <div class="strip-top">
+                  <canvas class="wave" data-seed="STAR-VAE" width="208" height="52" aria-hidden="true"></canvas>
+                  <span class="venue"><b>ICML 2026</b></span>
+                </div>
+                <h3>STAR-VAE</h3>
+                <p class="sub">Structured topology-aware regularization for audio reconstruction and generation.</p>
+                <p class="byline">Huadai Liu, Wen Wang, <span class="me">Kaicheng Luo</span>, Qian Chen,
+                  Xiangang Li, Wei Xue</p>
+                <div class="strip-links"><span class="primary">OpenReview ↗</span></div>
+              </a>
             </div>
-            <h3>ThinkSound: Chain-of-Thought Reasoning in Multimodal LLMs for Audio Generation and Editing</h3>
-            <p class="authors">Huadai Liu, <span class="me">Kaicheng Luo</span>, Jialei Wang, Wen Wang,
-              Qian Chen, Zhou Zhao, Wei Xue</p>
-            <div class="plinks"><span>OpenReview ↗</span><span data-href="https://github.com/QwenAudio/ThinkSound">Code ↗</span></div>
-          </a>
+          </div>
 
-          <a class="paper rise" href="https://openreview.net/forum?id=qEVxub0h2a" target="_blank" rel="noopener">
-            <div class="ptop">
-              <span class="venue icml">ICML 2025 · Poster</span>
-              <span class="stars">★ 375 on GitHub</span>
+          <div class="year">
+            <div class="year-tag">2025</div>
+            <div class="year-tracks">
+              <a class="strip rise" href="https://openreview.net/forum?id=mj8VN4MyrO" target="_blank" rel="noopener">
+                <div class="strip-top">
+                  <canvas class="wave" data-seed="ThinkSound" width="208" height="52" aria-hidden="true"></canvas>
+                  <span class="venue"><b>NeurIPS 2025</b> · Poster</span>
+                  <span class="repo">1.4k ★ QwenAudio/ThinkSound</span>
+                </div>
+                <h3>ThinkSound</h3>
+                <p class="sub">Chain-of-thought reasoning in multimodal LLMs for audio generation and editing.</p>
+                <p class="byline">Huadai Liu, <span class="me">Kaicheng Luo</span>, Jialei Wang, Wen Wang,
+                  Qian Chen, Zhou Zhao, Wei Xue</p>
+                <div class="strip-links">
+                  <span class="primary">OpenReview ↗</span>
+                  <span data-href="https://github.com/QwenAudio/ThinkSound">Code ↗</span>
+                </div>
+              </a>
+
+              <a class="strip rise" href="https://openreview.net/forum?id=qEVxub0h2a" target="_blank" rel="noopener">
+                <div class="strip-top">
+                  <canvas class="wave" data-seed="OmniAudio360" width="208" height="52" aria-hidden="true"></canvas>
+                  <span class="venue"><b>ICML 2025</b> · Poster</span>
+                  <span class="repo">375 ★ liuhuadai/OmniAudio</span>
+                </div>
+                <h3>OmniAudio</h3>
+                <p class="sub">Generating spatial audio from 360° video.</p>
+                <p class="byline">Huadai Liu, Tianyi Luo, <span class="me">Kaicheng Luo</span>, Qikai Jiang,
+                  Peiwen Sun, Jialei Wang, Rongjie Huang, Qian Chen, Wen Wang, Xiangtai Li,
+                  Shiliang Zhang, Zhijie Yan, Zhou Zhao, Wei Xue</p>
+                <div class="strip-links">
+                  <span class="primary">OpenReview ↗</span>
+                  <span data-href="https://github.com/liuhuadai/OmniAudio">Code ↗</span>
+                </div>
+              </a>
             </div>
-            <h3>OmniAudio: Generating Spatial Audio from 360° Video</h3>
-            <p class="authors">Huadai Liu, Tianyi Luo, <span class="me">Kaicheng Luo</span>, Qikai Jiang,
-              Peiwen Sun, Jialei Wang, Rongjie Huang, Qian Chen, Wen Wang, Xiangtai Li,
-              Shiliang Zhang, Zhijie Yan, Zhou Zhao, Wei Xue</p>
-            <div class="plinks"><span>OpenReview ↗</span><span data-href="https://github.com/liuhuadai/OmniAudio">Code ↗</span></div>
-          </a>
+          </div>
         </div>
       </div>
     </section>
 
-    <div class="wrap rule"></div>
+    <!-- INTERESTS -->
+    <section class="band" id="interests">
+      <div class="shell">
+        <div class="band-head rise">
+          <h2>Interests</h2>
+          <span class="lbl count">Where I&rsquo;m headed</span>
+        </div>
+        <div class="areas">
+          <div class="area rise">
+            <h3>Temporal alignment</h3>
+            <p>Sound that lands on the frame it belongs to, not somewhere nearby.</p>
+          </div>
+          <div class="area rise">
+            <h3>Reasoning before synthesis</h3>
+            <p>Letting a model decompose a scene into events before it commits to audio.</p>
+          </div>
+          <div class="area rise">
+            <h3>Space and representation</h3>
+            <p>Ambisonics from panoramic video, and audio autoencoders worth generating in.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- CONTACT -->
     <section class="band" id="contact">
-      <div class="wrap">
-        <div class="head rise">
-          <h2>Get in touch</h2>
-          <span class="idx">03 / Contact</span>
+      <div class="shell">
+        <div class="band-head rise">
+          <h2>Contact</h2>
+          <span class="lbl count">Open to collaboration</span>
         </div>
-        <p class="lede rise">Open to collaboration on audio generation, multimodal reasoning, and
-          anything that makes models listen better.</p>
-        <div class="contact-grid">
-          <a class="ccard rise" href="mailto:kaichengluo114@gmail.com">
-            <span class="k">Email</span><span class="v">kaichengluo114@gmail.com</span>
+        <div class="rows">
+          <a class="row rise" href="mailto:kaichengluo114@gmail.com">
+            <span class="k">Email</span><span class="v">kaichengluo114@gmail.com</span><span class="go" aria-hidden="true">↗</span>
           </a>
-          <a class="ccard rise" href="https://openreview.net/profile?id=~Kaicheng_Luo1" target="_blank" rel="noopener">
-            <span class="k">OpenReview</span><span class="v">~Kaicheng_Luo1</span>
+          <a class="row rise" href="https://openreview.net/profile?id=~Kaicheng_Luo1" target="_blank" rel="noopener">
+            <span class="k">OpenReview</span><span class="v">~Kaicheng_Luo1</span><span class="go" aria-hidden="true">↗</span>
           </a>
-          <a class="ccard rise" href="https://github.com/lkcqswb" target="_blank" rel="noopener">
-            <span class="k">GitHub</span><span class="v">@lkcqswb</span>
+          <a class="row rise" href="https://github.com/lkcqswb" target="_blank" rel="noopener">
+            <span class="k">GitHub</span><span class="v">@lkcqswb</span><span class="go" aria-hidden="true">↗</span>
           </a>
+        </div>
+
+        <div class="foot">
+          <span class="lbl">© 2026 Kaicheng Luo</span>
+          <span class="lbl">Hangzhou → Shanghai</span>
         </div>
       </div>
     </section>
-
-    <div class="wrap rule"></div>
-
-    <footer class="wrap">
-      <span>© 2026 Kaicheng Luo</span>
-      <span>Hangzhou → Shanghai</span>
-    </footer>
   </main>
 </div>
 
@@ -399,13 +412,11 @@
 (() => {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- flow-field particle bloom ---------- */
+  /* ================= flow-field particle bloom ================= */
   const canvas = document.getElementById('fx');
   const ctx = canvas.getContext('2d', { alpha: false });
   let W = 0, H = 0, dpr = 1, particles = [], t = 0, raf = 0;
-  // the bloom is anchored off to one side so the headline keeps clean space
   const bloom = { x: 0, y: 0, r: 0, wide: false };
-
   const COLORS = ['#e879f9', '#a78bfa', '#5eead4', '#f0abfc'];
 
   function resize() {
@@ -413,23 +424,18 @@
     W = innerWidth; H = innerHeight;
     canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#06050b';
+    ctx.fillStyle = '#08070d';
     ctx.fillRect(0, 0, W, H);
 
     bloom.wide = W > 900;
     bloom.x = W * (bloom.wide ? .72 : .5);
     bloom.y = H * (bloom.wide ? .44 : .18);
     bloom.r = Math.max(W, H) * .58;
-
     seed();
   }
 
-  // gaussian-ish sample via central limit, in [-1,1]
-  function gauss() {
-    return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
-  }
+  function gauss() { return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; }
 
-  // 0..1 visibility mask: bright near the bloom, damped over the text column
   function mask(x, y) {
     const d = Math.hypot(x - bloom.x, y - bloom.y) / bloom.r;
     let m = Math.max(0, 1 - d * d);
@@ -437,7 +443,7 @@
       const edge = W * .52;
       if (x < edge) m *= Math.max(.06, (x / edge) ** 2.2);
     } else {
-      m *= .6; // narrow screens: the bloom sits behind the type, so keep it quieter
+      m *= .45; // narrow screens: the bloom sits behind the type, so keep it quieter
     }
     return m;
   }
@@ -445,16 +451,14 @@
   function seed() {
     const density = Math.round((W * H) / 3200);
     const count = Math.max(140, Math.min(reduced ? 200 : 620, density));
-    particles = Array.from({ length: count }, () => spawn());
+    particles = Array.from({ length: count }, spawn);
   }
 
   function spawn() {
-    // most particles cluster around the bloom; a few drift anywhere for ambience
     const clustered = Math.random() < .82;
-    const x = clustered ? bloom.x + gauss() * bloom.r * .62 : Math.random() * W;
-    const y = clustered ? bloom.y + gauss() * bloom.r * .5 : Math.random() * H;
     return {
-      x, y,
+      x: clustered ? bloom.x + gauss() * bloom.r * .62 : Math.random() * W,
+      y: clustered ? bloom.y + gauss() * bloom.r * .5 : Math.random() * H,
       life: Math.random() * 260 + 90,
       age: 0,
       w: Math.random() * 1.5 + .35,
@@ -463,11 +467,9 @@
     };
   }
 
-  // cheap smooth pseudo-noise: sum of sines, no lookup tables
   function field(x, y, time) {
     const a = Math.sin(x * .0016 + time * .00022) * Math.cos(y * .0013 - time * .00017);
     const b = Math.sin((x + y) * .0009 - time * .00031);
-    // higher-frequency octave adds curl so streaks swirl instead of falling in parallel
     const c = Math.sin(x * .0052 - y * .0047 + time * .00045) * .55;
     return (a + b + c) * Math.PI;
   }
@@ -476,24 +478,19 @@
 
   function frame() {
     t += 16;
-    // trail fade — low alpha lets streaks accumulate into a bloom
-    ctx.fillStyle = 'rgba(6,5,11,.038)';
+    ctx.fillStyle = 'rgba(8,7,13,.038)';
     ctx.fillRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'lighter';
 
     for (const p of particles) {
       const ang = field(p.x, p.y, t);
-      let vx = Math.cos(ang) * p.spd;
-      let vy = Math.sin(ang) * p.spd;
+      let vx = Math.cos(ang) * p.spd, vy = Math.sin(ang) * p.spd;
 
       if (pointer.active) {
-        const dx = p.x - pointer.x, dy = p.y - pointer.y;
-        const d2 = dx * dx + dy * dy;
+        const dx = p.x - pointer.x, dy = p.y - pointer.y, d2 = dx * dx + dy * dy;
         if (d2 < 42000 && d2 > 1) {
-          const f = (42000 - d2) / 42000;
-          const inv = 1 / Math.sqrt(d2);
-          vx += dx * inv * f * 2.4;
-          vy += dy * inv * f * 2.4;
+          const f = (42000 - d2) / 42000, inv = 1 / Math.sqrt(d2);
+          vx += dx * inv * f * 2.4; vy += dy * inv * f * 2.4;
         }
       }
 
@@ -506,22 +503,16 @@
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(nx, ny);
-
-        // halo pass: wide + faint, additive blending turns overlaps into glow
-        ctx.globalAlpha = .07 * fade * m;
+        ctx.globalAlpha = .07 * fade * m;   // halo
         ctx.lineWidth = p.w * 6;
         ctx.stroke();
-
-        // core pass: thin + bright
-        ctx.globalAlpha = (.24 + .34 * fade) * m;
+        ctx.globalAlpha = (.24 + .34 * fade) * m;  // core
         ctx.lineWidth = p.w;
         ctx.stroke();
       }
 
       p.x = nx; p.y = ny; p.age++;
-      if (p.age > p.life || nx < -40 || nx > W + 40 || ny < -40 || ny > H + 40) {
-        Object.assign(p, spawn());
-      }
+      if (p.age > p.life || nx < -40 || nx > W + 40 || ny < -40 || ny > H + 40) Object.assign(p, spawn());
     }
 
     ctx.globalAlpha = 1;
@@ -529,57 +520,103 @@
     raf = requestAnimationFrame(frame);
   }
 
-  function start() { if (!raf) raf = requestAnimationFrame(frame); }
-  function stop() { cancelAnimationFrame(raf); raf = 0; }
+  const start = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  const stop = () => { cancelAnimationFrame(raf); raf = 0; };
 
   resize();
   addEventListener('resize', resize, { passive: true });
   document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
-
   if (matchMedia('(pointer: fine)').matches) {
-    addEventListener('pointermove', e => {
-      pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true;
-    }, { passive: true });
+    addEventListener('pointermove', e => { pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true; }, { passive: true });
     addEventListener('pointerleave', () => { pointer.active = false; }, { passive: true });
   }
+  if (reduced) { for (let i = 0; i < 240; i++) frame(); stop(); } else start();
 
-  if (reduced) {
-    // one static pass: texture without motion
-    for (let i = 0; i < 240; i++) frame();
-    stop();
-  } else {
-    start();
+  /* ================= per-paper waveform ================= */
+  // deterministic from the paper's own name, so each strip keeps a stable identity
+  function mulberry32(a) {
+    return () => {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let x = Math.imul(a ^ a >>> 15, 1 | a);
+      x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x;
+      return ((x ^ x >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  const hash = s => [...s].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
+
+  const waves = [...document.querySelectorAll('.wave')].map(cv => {
+    const c = cv.getContext('2d');
+    const rnd = mulberry32(hash(cv.dataset.seed));
+    const BARS = 26;
+    // an envelope with a couple of transients — reads as a sound event, not noise
+    const amps = Array.from({ length: BARS }, (_, i) => {
+      const env = Math.sin((i / (BARS - 1)) * Math.PI) ** .65;
+      const hit = rnd() < .18 ? 1 : .52;
+      return Math.max(.12, env * hit * (.45 + rnd() * .55));
+    });
+    return { cv, c, amps, head: -1 };
+  });
+
+  function drawWave(w) {
+    const { c, cv, amps } = w;
+    const W2 = cv.width, H2 = cv.height, n = amps.length;
+    const gap = 3, bw = (W2 - gap * (n - 1)) / n;
+    c.clearRect(0, 0, W2, H2);
+    amps.forEach((a, i) => {
+      const h = Math.max(2, a * H2 * .92);
+      const x = i * (bw + gap), y = (H2 - h) / 2;
+      const near = w.head >= 0 ? Math.max(0, 1 - Math.abs(i - w.head) / 4) : 0;
+      c.fillStyle = near > 0 ? `rgba(232,121,249,${.45 + near * .55})` : 'rgba(214,201,240,.5)';
+      c.beginPath();
+      c.roundRect(x, y, bw, h, bw / 2);
+      c.fill();
+    });
+  }
+  waves.forEach(drawWave);
+
+  // hover scrubs a playhead across the strip's waveform
+  if (!reduced && matchMedia('(pointer: fine)').matches) {
+    waves.forEach(w => {
+      const strip = w.cv.closest('.strip');
+      let anim = 0;
+      strip.addEventListener('pointerenter', () => {
+        cancelAnimationFrame(anim);
+        w.head = 0;
+        const step = () => {
+          w.head += .55;
+          drawWave(w);
+          if (w.head < w.amps.length + 4) anim = requestAnimationFrame(step);
+          else { w.head = -1; drawWave(w); }
+        };
+        anim = requestAnimationFrame(step);
+      });
+      strip.addEventListener('pointerleave', () => {
+        cancelAnimationFrame(anim); w.head = -1; drawWave(w);
+      });
+    });
   }
 
-  /* ---------- reveal on scroll ---------- */
+  /* ================= chrome ================= */
+  const bar = document.getElementById('bar');
+  const onScroll = () => {
+    bar.classList.toggle('stuck', scrollY > 40);
+    // hand the page back to the type once the hero is behind you
+    const k = Math.min(1, scrollY / (innerHeight * .85));
+    canvas.style.opacity = (1 - k * .8).toFixed(3);
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e, i) => {
       if (!e.isIntersecting) return;
-      const el = e.target;
-      setTimeout(() => el.classList.add('in'), i * 70);
-      io.unobserve(el);
+      setTimeout(() => e.target.classList.add('in'), i * 65);
+      io.unobserve(e.target);
     });
-  }, { rootMargin: '0px 0px -12% 0px', threshold: .1 });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: .1 });
   document.querySelectorAll('.rise').forEach(el => io.observe(el));
 
-  /* ---------- card tilt + glow follow ---------- */
-  if (matchMedia('(pointer: fine)').matches && !reduced) {
-    document.querySelectorAll('.paper').forEach(card => {
-      card.addEventListener('pointermove', e => {
-        const r = card.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width;
-        const py = (e.clientY - r.top) / r.height;
-        card.style.setProperty('--mx', px * 100 + '%');
-        card.style.setProperty('--my', py * 100 + '%');
-        card.style.transform =
-          `perspective(1000px) rotateX(${(.5 - py) * 4}deg) rotateY(${(px - .5) * 5}deg) translateY(-3px)`;
-      });
-      card.addEventListener('pointerleave', () => { card.style.transform = ''; });
-    });
-  }
-
-  /* ---------- nested "Code ↗" links inside anchor cards ---------- */
-  document.querySelectorAll('.plinks span[data-href]').forEach(el => {
+  document.querySelectorAll('.strip-links span[data-href]').forEach(el => {
     el.style.cursor = 'pointer';
     el.addEventListener('click', e => {
       e.preventDefault(); e.stopPropagation();
