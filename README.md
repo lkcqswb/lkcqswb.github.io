@@ -36,3 +36,7 @@ It is a single static file: no build step, no framework, and only a few lines of
 - The BibTeX entries were written from those fields. Only OmniAudio carries proceedings volume and
   page numbers (PMLR 267, pp. 39060–39084).
 - GitHub star counts (ThinkSound 1.4k, OmniAudio 378) are a static snapshot from the same date.
+- AudioCALM (added 2026-09-24): the venue (NeurIPS 2026) comes from Kaicheng on the day of acceptance.
+  The title, arXiv ID (2606.23080), project page and author order come from the arXiv listing,
+  found through web search. It has no OpenReview link yet; add one, and re-check the author order,
+  once the camera-ready version is public.
